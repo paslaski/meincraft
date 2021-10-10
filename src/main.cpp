@@ -17,6 +17,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
+void checkGLError();
 
 
 // settings
@@ -107,7 +108,12 @@ int main() {
 
     // tell OpenGL the ize of the rendering window so OpenGL knows how we want
     // to display the data and coordinates with respect to the window
-    glViewport(0, 0, 800, 600);
+
+    // must pass the frame buffer size bc pixel dimensions don't necessarily match
+    // viewport dimensions in some devices (we're looking at you M1 macs...)
+    int frameBufferWidth, frameBufferHeight;
+    glfwGetFramebufferSize(window, &frameBufferWidth, &frameBufferHeight);
+    glViewport(0, 0, frameBufferWidth, frameBufferHeight);
 
     // configure global opengl state
     // -----------------------------
@@ -208,7 +214,7 @@ int main() {
     // load image, create texture and generate mipmaps
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
-    unsigned char *data = stbi_load("/Users/robpaslaski/Documents/Projects/meincraft/img/texture_atlas.png", &width, &height, &nrChannels, 0);
+    unsigned char *data = stbi_load("/Users/robpaslaski/Documents/meincraft/img/texture_atlas.png", &width, &height, &nrChannels, 0);
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
@@ -289,7 +295,7 @@ int main() {
 
         // render
         // ------
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(0.2f, 0.0f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
 
         // bind textures on corresponding texture units
@@ -417,4 +423,12 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
         fov = 1.0f;
     if (fov > 45.0f)
         fov = 45.0f;
+}
+
+void checkGLError()
+{
+    GLenum err;
+    while((err = glGetError()) != GL_NO_ERROR){
+        std::cout << err;
+    }
 }
