@@ -25,27 +25,18 @@ int main() {
             glm::vec3( 1.5f,  0.2f, -1.5f),
             glm::vec3(-1.3f,  1.0f, -1.5f)
     };
-    std::cout << cubePositions.size() << std::endl;
+
+    // create dirt blocks for testing purposes
     for (int i = 0; i < cubePositions.size(); i++)
     {
         createEntity(world, cubePositions[i]);
     }
 
-    // render loop
-    // -----------
+    // ECS game loop
     while (!world.isDestroyed())
     {
-
-
-//        // input
-//        // -----
-//        processInput(window);
-
-
-        // all systems updated (dirt block rendering)
         world.update();
     }
-
 
     return 0;
 }
