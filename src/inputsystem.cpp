@@ -38,12 +38,12 @@ void InputSystem::assign_window_callbacks()
 
     auto pass_mouse_callback = [](GLFWwindow* w, double x, double y)
     {
-        static_cast<InputSystem*>(glfwGetWindowUserPointer(w))->camera->ProcessMouseMovement(x, y);
+        static_cast<InputSystem*>(glfwGetWindowUserPointer(w))->get_camera()->ProcessMouseMovement(x, y);
     };
 
     auto pass_scroll_callback = [](GLFWwindow* w, double xoff, double yoff)
     {
-        static_cast<InputSystem*>(glfwGetWindowUserPointer(w))->camera->ProcessMouseScroll(yoff);
+        static_cast<InputSystem*>(glfwGetWindowUserPointer(w))->get_camera()->ProcessMouseScroll(yoff);
     };
 
     glfwSetFramebufferSizeCallback(window, pass_frame_buffer_callback);

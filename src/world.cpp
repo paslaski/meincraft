@@ -6,7 +6,7 @@
 
 World::World() : renderSystem(RenderSystem()), inputSystem(renderSystem.get_window(), renderSystem.get_camera())
 {
-
+    inputSystem.assign_window_callbacks();
 }
 
 World::~World()

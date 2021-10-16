@@ -16,6 +16,7 @@ public:
 
     void assign_window(GLFWwindow* w);
     void assign_window_callbacks();
+    Camera* get_camera() { return camera; }
 
 private:
     GLFWwindow* window;
