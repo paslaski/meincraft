@@ -32,7 +32,7 @@ link_libraries(${OPENGL} ${GLEW_LINK} ${GLFW_LINK})
 # Execute compilation command
 set(SOURCE_FILES src/main.cpp)
 # added glad to be compiled before main
-add_executable(meincraft src/main.cpp /Users/robpaslaski/Downloads/glad/src/glad.c src/main.cpp ext/stb_image.cpp src/entity.cpp src/entity.h src/components.h src/world.cpp src/world.h src/rendersystem.cpp src/rendersystem.h src/inputsystem.cpp src/inputsystem.h src/camera.h)
+add_executable(meincraft src/main.cpp /Users/robpaslaski/Downloads/glad/src/glad.c src/main.cpp ext/stb_image.cpp src/entity.cpp src/entity.h src/components.h src/world.cpp src/world.h src/rendersystem.cpp src/rendersystem.h src/inputsystem.cpp src/inputsystem.h src/camera.h src/chunk.cpp src/chunk.h src/block.h)
 
 if (APPLE)
     target_link_libraries(meincraft "-framework OpenGL")

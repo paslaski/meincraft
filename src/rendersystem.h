@@ -25,6 +25,7 @@ private:
     void load_texture_map();
 
     void clear_buffers();
+    void simple_render_chunk(entt::registry& registry);
     void render_dirt_system(entt::registry& registry);
 
     // rudimentary error handling
