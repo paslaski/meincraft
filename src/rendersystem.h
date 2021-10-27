@@ -24,7 +24,7 @@ private:
     void create_window();
     void load_texture_map();
 
-    void clear_buffers();
+    static void clear_buffers();
     void simple_render_chunk(entt::registry& registry);
     void render_dirt_system(entt::registry& registry);
 
