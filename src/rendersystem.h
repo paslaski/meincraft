@@ -3,6 +3,8 @@
 #include "camera.h"
 #include <GLFW/glfw3.h>
 #include <entt.hpp>
+#include "texture.h"
+#include "shader.h"
 
 class Camera;
 
@@ -21,15 +23,17 @@ private:
     GLFWwindow* window;
     Camera camera;
 
+    std::unique_ptr<Texture> textureAtlas;
+    std::unique_ptr<Shader> simpleShader;
+
     void create_window();
     void load_texture_map();
+    void load_texture_map_old();
 
     static void clear_buffers();
     void simple_render_chunk(entt::registry& registry);
     void render_dirt_system(entt::registry& registry);
-
-    // rudimentary error handling
-    void checkGLError();
+    void render_dirt_system_old(entt::registry& registry);
 
     // settings and constants
     const unsigned int SCR_WIDTH = 800;

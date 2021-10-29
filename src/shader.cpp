@@ -7,7 +7,7 @@
 #include "shader.h"
 #include "debug.h"
 
-Shader::Shader(std::string vertexPath, std::string fragmentPath) : m_ProgramId(0)
+Shader::Shader(std::string vertexPath, std::string fragmentPath)
 {
     // parse code from shader paths
     std::string vertexCode = ParseShader(vertexPath);
@@ -15,6 +15,10 @@ Shader::Shader(std::string vertexPath, std::string fragmentPath) : m_ProgramId(0
 
     // create + compile shaders
     m_ProgramId = CreateShader(vertexCode, fragmentCode);
+    GLCall(std::cout << "Program valid at constructor: " << (glIsProgram(m_ProgramId)==GL_TRUE) << std::endl);
+
+//    Bind();
+//    glUseProgram(m_ProgramId);
 }
 
 Shader::~Shader()
@@ -22,8 +26,9 @@ Shader::~Shader()
     GLCall( glDeleteProgram(m_ProgramId) );
 }
 
-void Shader::Bind() const
+void Shader::Bind()
 {
+    GLCall(std::cout << "Program valid at Bind() method: " << (glIsProgram(m_ProgramId)==GL_TRUE) << std::endl);
     GLCall( glUseProgram(m_ProgramId) );
 }
 
@@ -126,7 +131,7 @@ unsigned int Shader::CompileShader(unsigned int type, const std::string &source)
     return id;
 }
 
-unsigned int Shader::CreateShader(const std::string &vertexShader, const std::string &fragmentShader)
+unsigned int Shader::CreateShader(const std::string& vertexShader, const std::string& fragmentShader)
 {
     unsigned int program = glCreateProgram();
     unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertexShader);
@@ -151,7 +156,10 @@ unsigned int Shader::CreateShader(const std::string &vertexShader, const std::st
     }
 
     GLCall( glValidateProgram(program) );
-
+//    glUseProgram(program);
+//
     GLCall( glDeleteShader(vs) );
     GLCall( glDeleteShader(fs) );
+
+    return program;
 }

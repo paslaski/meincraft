@@ -7,9 +7,18 @@
 class Shader
 {
 public:
+    Shader() = default; // default constructor
     Shader(std::string vertexPath, std::string fragmentPath);
     ~Shader();
-    void Bind() const;
+
+//    // delete copy constructor and assignment operators
+//    Shader(const Shader& shader) = delete; // copy constructor
+//    Shader& operator=( const Shader & ) = delete; // copy assignment operator
+//    // enable move constructor and assignment operators
+//    Shader(Shader&& shader) = default;
+//    Shader& operator=(const Shader&& ) = default;
+
+    void Bind();
     void Unbind() const;
 
     void SetUniform1i(const std::string& name, int value);

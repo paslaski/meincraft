@@ -5,7 +5,12 @@
 #include <glad/glad.h>
 #include <stb_image.h>
 
+
 RenderSystem::RenderSystem()
+//    : camera(glm::vec3(0.0f, 0.0f, 3.0f)), window(create_window()),
+//      textureAtlas("/Users/robpaslaski/Documents/meincraft/img/texture_atlas.png"),
+//      simpleShader("/Users/robpaslaski/Documents/meincraft/src/simpleVertex.glsl",
+//                   "/Users/robpaslaski/Documents/meincraft/src/simpleFragment.glsl")
 {
     // initialize camera
     camera = Camera(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -13,6 +18,15 @@ RenderSystem::RenderSystem()
     // create GLFW window and prepare block textures
     create_window();
     load_texture_map();
+
+    textureAtlas = std::make_unique<Texture>("/Users/robpaslaski/Documents/meincraft/img/texture_atlas.png");
+//    textureAtlas->Bind();
+
+    simpleShader = std::make_unique<Shader>("/Users/robpaslaski/Documents/meincraft/src/simpleVertex.glsl",
+                        "/Users/robpaslaski/Documents/meincraft/src/simpleFragment.glsl");
+    simpleShader->Bind();
+    simpleShader->SetUniform1i("ourTexture", 0);
+    textureAtlas->Bind();
 }
 
 RenderSystem::~RenderSystem()
@@ -62,21 +76,43 @@ void RenderSystem::simple_render_chunk(entt::registry& registry)
         glDrawArrays(GL_TRIANGLES, 0, 36);
     }
 }
-
 void RenderSystem::render_dirt_system(entt::registry& registry)
 {
 
     for (auto [entity, position] : registry.view<PositionComponent>().each())
     {
         // create transformations
-//        glm::mat4 view          = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-//        glm::mat4 projection    = glm::mat4(1.0f);
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-//        projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         glm::mat4 view = camera.GetViewMatrix();
-//        view       = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-        // pass transformation matrices to the shader
 
+        // pass transformation matrices to the shader
+        // note: currently we set the projection matrix each frame, but since the projection
+        // matrix rarely changes it's often best practice to set it outside the main loop only once.
+        simpleShader->SetUniformMat4f("projection", projection);
+        simpleShader->SetUniformMat4f("view", view);
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, position.pos);
+
+        simpleShader->SetUniformMat4f("model",  model);
+
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
+
+}
+void RenderSystem::render_dirt_system_old(entt::registry& registry)
+{
+
+    for (auto [entity, position] : registry.view<PositionComponent>().each())
+    {
+        // create transformations
+        // glm::mat4 view          = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+        // glm::mat4 projection    = glm::mat4(1.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        // projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 view = camera.GetViewMatrix();
+
+        // pass transformation matrices to the shader
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
         // ourShader.setMat4("projection", projection); // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
@@ -84,8 +120,8 @@ void RenderSystem::render_dirt_system(entt::registry& registry)
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, position.pos);
-//            float angle = 20.0f * i;
-//            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+        // float angle = 20.0f * i;
+        // model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
         // ourShader.setMat4("model", model);
 
@@ -144,7 +180,7 @@ void RenderSystem::create_window()
     glEnable(GL_DEPTH_TEST);
 }
 
-void RenderSystem::load_texture_map()
+void RenderSystem::load_texture_map_old()
 {
     // cube vertices: position, texture coord
     int textureIdx = 16*15 + 2; // spans 0-255 with 0 at bottom left, 255 at top right
@@ -246,7 +282,6 @@ void RenderSystem::load_texture_map()
         std::cout << "Failed to load texture" << std::endl;
     }
     stbi_image_free(data);
-
     // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
     // -------------------------------------------------------------------------------------------
 
@@ -294,7 +329,7 @@ void RenderSystem::load_texture_map()
     }
 
     glUseProgram(shaderProgram);
-    glUniform1i(glGetUniformLocation(shaderProgram, "textureAtlas"), 0);
+    glUniform1i(glGetUniformLocation(shaderProgram, "ourTexture"), 0);
 
     // flip textures
     stbi_set_flip_vertically_on_load(true);
@@ -311,4 +346,85 @@ void RenderSystem::load_texture_map()
 void RenderSystem::clear_buffers() {
     glClearColor(0.604f, 0.796f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
+}
+
+void RenderSystem::load_texture_map()
+{
+    // cube vertices: position, texture coord
+    int textureIdx = 16*15 + 2; // spans 0-255 with 0 at bottom left, 255 at top right
+    int row = textureIdx % 16, col = textureIdx / 16;
+
+    float vertices[] = {
+            -0.5f, -0.5f, -0.5f,  (float)row/16.0f, (float)col/16.0f,
+            0.5f, -0.5f, -0.5f,   ((float)row+1)/16.0f, (float)col/16.0f,
+            0.5f,  0.5f, -0.5f,   ((float)row+1)/16.0f, ((float)col+1)/16.0f,
+            0.5f,  0.5f, -0.5f,   ((float)row+1)/16.0f,  ((float)col+1)/16.0f,
+            -0.5f,  0.5f, -0.5f,  (float)row/16.0f, ((float)col+1)/16.0f,
+            -0.5f, -0.5f, -0.5f,  (float)row/16.0f, (float)col/16.0f,
+
+            -0.5f, -0.5f,  0.5f,  (float)row/16.0f, (float)col/16.0f,
+            0.5f, -0.5f,  0.5f,   ((float)row+1)/16.0f, (float)col/16.0f,
+            0.5f,  0.5f,  0.5f,   ((float)row+1)/16.0f, ((float)col+1)/16.0f,
+            0.5f,  0.5f,  0.5f,   ((float)row+1)/16.0f, ((float)col+1)/16.0f,
+            -0.5f,  0.5f,  0.5f,  (float)row/16.0f, ((float)col+1)/16.0f,
+            -0.5f, -0.5f,  0.5f,  (float)row/16.0f, (float)col/16.0f,
+
+            -0.5f,  0.5f,  0.5f,  ((float)row+1)/16.0f, (float)col/16.0f,
+            -0.5f,  0.5f, -0.5f,  ((float)row+1)/16.0f, ((float)col+1)/16.0f,
+            -0.5f, -0.5f, -0.5f,  (float)row/16.0f, ((float)col+1)/16.0f,
+            -0.5f, -0.5f, -0.5f,  (float)row/16.0f, ((float)col+1)/16.0f,
+            -0.5f, -0.5f,  0.5f,  (float)row/16.0f, (float)col/16.0f,
+            -0.5f,  0.5f,  0.5f,  ((float)row+1)/16.0f, (float)col/16.0f,
+
+            0.5f,  0.5f,  0.5f,  ((float)row+1)/16.0f, (float)col/16.0f,
+            0.5f,  0.5f, -0.5f,  ((float)row+1)/16.0f, ((float)col+1)/16.0f,
+            0.5f, -0.5f, -0.5f,  (float)row/16.0f, ((float)col+1)/16.0f,
+            0.5f, -0.5f, -0.5f,  (float)row/16.0f, ((float)col+1)/16.0f,
+            0.5f, -0.5f,  0.5f,  (float)row/16.0f, (float)col/16.0f,
+            0.5f,  0.5f,  0.5f,  ((float)row+1)/16.0f, (float)col/16.0f,
+
+            -0.5f, -0.5f, -0.5f,  (float)row/16.0f, ((float)col+1)/16.0f,
+            0.5f, -0.5f, -0.5f,   ((float)row+1)/16.0f, ((float)col+1)/16.0f,
+            0.5f, -0.5f,  0.5f,   ((float)row+1)/16.0f, (float)col/16.0f,
+            0.5f, -0.5f,  0.5f,   ((float)row+1)/16.0f, (float)col/16.0f,
+            -0.5f, -0.5f,  0.5f,  (float)row/16.0f, (float)col/16.0f,
+            -0.5f, -0.5f, -0.5f,  (float)row/16.0f, ((float)col+1)/16.0f,
+
+            -0.5f,  0.5f, -0.5f,  (float)row/16.0f, ((float)col+1)/16.0f,
+            0.5f,  0.5f, -0.5f,   ((float)row+1)/16.0f, ((float)col+1)/16.0f,
+            0.5f,  0.5f,  0.5f,   ((float)row+1)/16.0f, (float)col/16.0f,
+            0.5f,  0.5f,  0.5f,   ((float)row+1)/16.0f, (float)col/16.0f,
+            -0.5f,  0.5f,  0.5f,  (float)row/16.0f, (float)col/16.0f,
+            -0.5f,  0.5f, -0.5f,  (float)row/16.0f, ((float)col+1)/16.0f,
+    };
+
+    // create vertex buffer & vertex array objects
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // texture coord attribute
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+//    glUseProgram(shaderProgram);
+//    glUniform1i(glGetUniformLocation(shaderProgram, "textureAtlas"), 0);
+//
+
+//    // took out of render loop: revisit if rendering off texture map
+//    // bind textures on corresponding texture units
+//    glActiveTexture(GL_TEXTURE0);
+//    glBindTexture(GL_TEXTURE_2D, textureAtlas);
+//
+//    // activate shader
+//    glUseProgram(shaderProgram);
+
 }
