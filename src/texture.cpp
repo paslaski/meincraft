@@ -19,13 +19,11 @@ Texture::Texture(const std::string& path) {
     // removes texture bleeding and retains exact texture from atlas
     GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR));
     GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-    // replace w GL_RGBA?
+
     GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_Width, m_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_LocalBuffer));
     GLCall(glGenerateMipmap(GL_TEXTURE_2D));
 
-    GLCall(std::cout << "Texture valid at constructor: " << (glIsTexture(m_TextureId)==GL_TRUE) << std::endl);
-
-//    Unbind();
+    Unbind();
 
     if (m_LocalBuffer) {
         stbi_image_free(m_LocalBuffer);
@@ -41,7 +39,6 @@ Texture::~Texture()
 
 void Texture::Bind(unsigned int slot)
 {
-    GLCall(std::cout << "Texture valid at Bind() method: " << (glIsTexture(m_TextureId)==GL_TRUE) << std::endl);
     GLCall( glActiveTexture(GL_TEXTURE0 + slot) );
     GLCall( glBindTexture(GL_TEXTURE_2D, m_TextureId) );
 }

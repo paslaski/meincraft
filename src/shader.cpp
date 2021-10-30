@@ -15,10 +15,6 @@ Shader::Shader(std::string vertexPath, std::string fragmentPath)
 
     // create + compile shaders
     m_ProgramId = CreateShader(vertexCode, fragmentCode);
-    GLCall(std::cout << "Program valid at constructor: " << (glIsProgram(m_ProgramId)==GL_TRUE) << std::endl);
-
-//    Bind();
-//    glUseProgram(m_ProgramId);
 }
 
 Shader::~Shader()
@@ -28,7 +24,6 @@ Shader::~Shader()
 
 void Shader::Bind()
 {
-    GLCall(std::cout << "Program valid at Bind() method: " << (glIsProgram(m_ProgramId)==GL_TRUE) << std::endl);
     GLCall( glUseProgram(m_ProgramId) );
 }
 
