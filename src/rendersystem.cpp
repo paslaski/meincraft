@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include <glad/glad.h>
-#include <stb_image.h>
 
 
 RenderSystem::RenderSystem()
@@ -54,7 +53,7 @@ void RenderSystem::update(entt::registry& registry)
 
 void RenderSystem::simple_render_chunk(entt::registry& registry)
 {
-    texArrayVertex chunkVertices[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
+    std::vector<texArrayVertex> chunkVertices;
     float uvCoords[] = {
             0.0f, 0.0f, // first triangle on face
             1.0f, 0.0f,
@@ -72,8 +71,8 @@ void RenderSystem::simple_render_chunk(entt::registry& registry)
     glm::mat4 view = camera.GetViewMatrix();
 
     // pass transformation matrices to the shader
-    simpleShader->SetUniformMat4f("projection", projection);
-    simpleShader->SetUniformMat4f("view", view);
+    textureArrayShader->SetUniformMat4f("projection", projection);
+    textureArrayShader->SetUniformMat4f("view", view);
 
     // range for to iterate over registry view, returning all chunks w/ components
     for (auto [entity, position, blocks] : registry.view<PositionComponent, BlockComponent>().each() )
@@ -95,14 +94,13 @@ void RenderSystem::simple_render_chunk(entt::registry& registry)
                             // need to support different textures by side
                             // current dim scheme (face = 0 through 5)
                             // SOUTH, WEST, DOWN, NORTH, EAST, UP
-                            chunkVertices[i + (j * CHUNK_SIZE) + (k * CHUNK_SIZE * CHUNK_SIZE)] =
-                                    {
-                                    .worldPos = {static_cast<GLfloat>(position.pos.x + i + xVertOffset + xFaceOffset),
-                                                  static_cast<GLfloat>(position.pos.y + j + yVertOffset + yFaceOffset),
-                                                  static_cast<GLfloat>(position.pos.z + k + zVertOffset + zFaceOffset)},
-                                    .textureCoords = {uvCoords[v*2], uvCoords[v*2 + 1],
-                                                      static_cast<GLfloat>( sideLookup(blocks.at(i, j, k), dir[face]) )}
-                                    };
+                            chunkVertices.emplace_back(
+                                    static_cast<GLfloat>(position.pos.x + i + xVertOffset + xFaceOffset),
+                                    static_cast<GLfloat>(position.pos.y + j + yVertOffset + yFaceOffset),
+                                    static_cast<GLfloat>(position.pos.z + k + zVertOffset + zFaceOffset),
+                                    uvCoords[v*2], uvCoords[v*2 + 1],
+                                    static_cast<GLfloat>(sideLookup(blocks.at(i, j, k), dir[face]))
+                                    );
                         }
     }
     set_chunk_vbo(chunkVertices);
@@ -111,12 +109,23 @@ void RenderSystem::simple_render_chunk(entt::registry& registry)
 
 void RenderSystem::set_chunk_vao()
 {
+    glGenVertexArrays(1, &cVAO);
+    glBindVertexArray(cVAO);
+    // position attribute (3 GLfloats)
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(texArrayVertex), (void*)0);
+    glEnableVertexAttribArray(0);
 
+    // texture coord attribute (3 GLfloats)
+    // do we need to specify last as int instead of float?
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(texArrayVertex), (void*)offsetof(texArrayVertex, uTexCoord));
+    glEnableVertexAttribArray(1);
 }
 
-void RenderSystem::set_chunk_vbo(texArrayVertex verts[])
+void RenderSystem::set_chunk_vbo(std::vector<texArrayVertex>& vertices)
 {
-
+    glGenBuffers(1, &cVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, cVBO);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(texArrayVertex), &vertices[0], GL_STATIC_DRAW);
 }
 
 void RenderSystem::render_dirt_system(entt::registry& registry)

@@ -33,7 +33,7 @@ private:
     void load_cube_vbo_vao_texture_array();
 
     void set_chunk_vao();
-    void set_chunk_vbo(texArrayVertex verts[]);
+    void set_chunk_vbo(std::vector<texArrayVertex>& vertices);
 
     static void clear_buffers();
     void simple_render_chunk(entt::registry& registry);

@@ -35,8 +35,14 @@ private:
 
 struct texArrayVertex
 {
-    GLfloat worldPos[3];
-    GLfloat textureCoords[3];
+    GLfloat xWorldPos; GLfloat yWorldPos; GLfloat zWorldPos;
+    GLfloat uTexCoord;GLfloat vTexCoord; GLfloat pictureNum;
+
+    texArrayVertex(GLfloat xPos, GLfloat yPos, GLfloat zPos,
+                   GLfloat uCoord, GLfloat vCoord, GLfloat picNum)
+            : xWorldPos(xPos), yWorldPos(yPos), zWorldPos(zPos),
+              uTexCoord(uCoord), vTexCoord(vCoord), pictureNum(picNum)
+    {};
 };
 
 //// supports limited list for now
