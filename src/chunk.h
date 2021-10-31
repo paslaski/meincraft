@@ -8,8 +8,7 @@ const int CHUNK_SIZE = 16;
 
 class Chunk {
 public:
-
-    void createChunk(World& world);
+    static void createChunk(World& world);
 
 };
 

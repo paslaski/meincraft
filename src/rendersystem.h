@@ -25,9 +25,15 @@ private:
 
     std::shared_ptr<Texture> textureAtlas;
     std::shared_ptr<Shader> simpleShader;
+    std::shared_ptr<Texture> textureArray;
+    std::shared_ptr<Shader> textureArrayShader;
 
     void create_window();
     void load_cube_vbo_vao();
+    void load_cube_vbo_vao_texture_array();
+
+    void set_chunk_vao();
+    void set_chunk_vbo(texArrayVertex verts[]);
 
     static void clear_buffers();
     void simple_render_chunk(entt::registry& registry);
@@ -38,6 +44,7 @@ private:
     const unsigned int SCR_HEIGHT = 600;
 
     unsigned int VBO, VAO;
+    unsigned int cVBO, cVAO;
 
 };
 
