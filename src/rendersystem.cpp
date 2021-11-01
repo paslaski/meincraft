@@ -12,7 +12,7 @@ RenderSystem::RenderSystem()
 
     // create GLFW window and prepare block textures
     create_window();
-    load_cube_vbo_vao();
+//    load_cube_vbo_vao();
 
 //    textureAtlas = std::make_shared<Texture>("/Users/robpaslaski/Documents/meincraft/img/texture_atlas.png", GL_TEXTURE_2D);
 //    simpleShader = std::make_shared<Shader>("/Users/robpaslaski/Documents/meincraft/src/simpleVertex.glsl",
@@ -50,9 +50,22 @@ void RenderSystem::update(entt::registry& registry)
 
     glfwSwapBuffers(window);
 }
-
+void print_cubes(std::vector<texArrayVertex>& vertices)
+{
+    for (int faces = 0; faces < 6; faces++)
+    {
+        for (int vertex = 0; vertex < 6; vertex++) {
+            texArrayVertex curVertex = vertices[faces*6 + vertex];
+            std::cout << "Face " << faces << " " << "Vertex " << vertex << ":\nx=" << curVertex.xWorldPos << "   " <<
+                         "y=" << curVertex.yWorldPos << "   " << "z=" << curVertex.zWorldPos << std::endl;
+        }
+    }
+    std::cout << "------------------------------------------" << std::endl;
+};
 void RenderSystem::simple_render_chunk(entt::registry& registry)
 {
+    // wireframe for debugging
+//    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     std::vector<texArrayVertex> chunkVertices;
     float uvCoords[] = {
             0.0f, 0.0f, // first triangle on face
@@ -65,6 +78,10 @@ void RenderSystem::simple_render_chunk(entt::registry& registry)
     Direction dir[] = {
             SOUTH, WEST, DOWN, NORTH, EAST, UP
     };
+
+    textureArrayShader->Bind();
+    textureArray->Bind();
+    set_chunk_vao();
 
     // create transformations
     glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -82,19 +99,22 @@ void RenderSystem::simple_render_chunk(entt::registry& registry)
         for (int k = 0; k < CHUNK_SIZE; k++)
             for (int j = 0; j < CHUNK_SIZE; j++)
                 for (int i = 0; i < CHUNK_SIZE; i++)
-                    for (int face = 0; face < 6; face++) // 6 faces for each cube, must change vals
-                        for (int v = 0; v < 6; v++) { // 6 times for vertices, must change vals
+                    for (int face = 0; face < 6; face++) // 6 faces for each cube
+                        for (int v = 0; v < 6; v++) { // 6 vertices for each face
                             int dim = face % 3;
-                            float xVertOffset = (dim==0) ? 0.0f : uvCoords[dim]; // align offset with uv
-                            float yVertOffset = (dim==1) ? 0.0f : uvCoords[dim];
-                            float zVertOffset = (dim==2) ? 0.0f : uvCoords[dim];
-                            float xFaceOffset = (dim==0 && face > 2) ? 1.0f : 0.0f; // repeat for other 3 faces of cube
-                            float yFaceOffset = (dim==1 && face > 2) ? 1.0f : 0.0f;
-                            float zFaceOffset = (dim==2 && face > 2) ? 1.0f : 0.0f;
+                            // follows UV coordinates of texture across 2D face surface
+                            float xVertOffset = (dim==0) ? 0.0f : (dim==1) ? uvCoords[2*v] : uvCoords[2*v+1]; // align offset with uv
+                            float yVertOffset = (dim==1) ? 0.0f : (dim==2) ? uvCoords[2*v] : uvCoords[2*v+1];
+                            float zVertOffset = (dim==2) ? 0.0f : (dim==0) ? uvCoords[2*v] : uvCoords[2*v+1];
+                            // offsets by 1 in x, y, and z direction to create parallel faces
+                            float xFaceOffset = (face == 3) ? 1.0f : 0.0f;
+                            float yFaceOffset = (face == 4) ? 1.0f : 0.0f;
+                            float zFaceOffset = (face == 5) ? 1.0f : 0.0f;
                             // need to support different textures by side
                             // current dim scheme (face = 0 through 5)
                             // SOUTH, WEST, DOWN, NORTH, EAST, UP
                             chunkVertices.emplace_back(
+                                    //                           mesh corner + block corner + 1/0 + UV
                                     static_cast<GLfloat>(position.pos.x + i + xVertOffset + xFaceOffset),
                                     static_cast<GLfloat>(position.pos.y + j + yVertOffset + yFaceOffset),
                                     static_cast<GLfloat>(position.pos.z + k + zVertOffset + zFaceOffset),
@@ -104,7 +124,9 @@ void RenderSystem::simple_render_chunk(entt::registry& registry)
                         }
     }
     set_chunk_vbo(chunkVertices);
-    glDrawArrays(GL_TRIANGLES, 0, 36*CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE);
+    print_cubes(chunkVertices);
+    std::cout << chunkVertices.size() << std::endl;
+    glDrawArrays(GL_TRIANGLES, 0, chunkVertices.size());
 }
 
 void RenderSystem::set_chunk_vao()
@@ -112,12 +134,12 @@ void RenderSystem::set_chunk_vao()
     glGenVertexArrays(1, &cVAO);
     glBindVertexArray(cVAO);
     // position attribute (3 GLfloats)
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(texArrayVertex), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(texArrayVertex), (void*)0);
     glEnableVertexAttribArray(0);
 
     // texture coord attribute (3 GLfloats)
     // do we need to specify last as int instead of float?
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(texArrayVertex), (void*)offsetof(texArrayVertex, uTexCoord));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(texArrayVertex), (void*)offsetof(texArrayVertex, uTexCoord));
     glEnableVertexAttribArray(1);
 }
 

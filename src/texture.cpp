@@ -61,12 +61,12 @@ void Texture::GenerateTexture2DArray() // glActiveTexture?
     int rowLen    = tilesX * tileSizeX;
 
     // iterate across each texture, filling in texture array
-    for (int iy = 0; iy < tilesY; ++ iy)
+    for (int iy = 0; iy < tilesY; iy++)
     {
-        for (int ix = 0; ix < tilesX; ++ ix)
+        for (int ix = 0; ix < tilesX; ix++)
         {
-            unsigned char *ptr = m_LocalBuffer + iy*rowLen + ix*tileSizeX;
-            for (int row = 0; row < tileHeight; ++ row)
+            unsigned char *ptr = m_LocalBuffer + iy*rowLen*tileHeight + ix*tileSizeX;
+            for (int row = 0; row < tileHeight; row++)
                 std::copy(ptr + row*rowLen, ptr + row*rowLen + tileSizeX,
                           tile.begin() + row*tileSizeX);
 
