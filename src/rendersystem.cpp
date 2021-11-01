@@ -75,8 +75,10 @@ void RenderSystem::simple_render_chunk(entt::registry& registry)
             1.0f, 1.0f,
             1.0f, 0.0f
     };
+    // aligns direction with faces 0-5 in loop
+    // WEST, DOWN, NORTH, EAST, UP, SOUTH
     Direction dir[] = {
-            SOUTH, WEST, DOWN, NORTH, EAST, UP
+            WEST, DOWN, NORTH, EAST, UP, SOUTH
     };
 
     textureArrayShader->Bind();
@@ -103,16 +105,28 @@ void RenderSystem::simple_render_chunk(entt::registry& registry)
                         for (int v = 0; v < 6; v++) { // 6 vertices for each face
                             int dim = face % 3;
                             // follows UV coordinates of texture across 2D face surface
-                            float xVertOffset = (dim==0) ? 0.0f : (dim==1) ? uvCoords[2*v] : uvCoords[2*v+1]; // align offset with uv
-                            float yVertOffset = (dim==1) ? 0.0f : (dim==2) ? uvCoords[2*v] : uvCoords[2*v+1];
-                            float zVertOffset = (dim==2) ? 0.0f : (dim==0) ? uvCoords[2*v] : uvCoords[2*v+1];
+                            // also aligns UV with position in world space
+                            float xVertOffset, yVertOffset, zVertOffset;
+                            if (dim == 0) {
+                                xVertOffset = 0.0f;
+                                yVertOffset = uvCoords[2*v + 1];
+                                zVertOffset = uvCoords[2*v];
+                            } else if (dim == 1) {
+                                xVertOffset = uvCoords[2*v];
+                                yVertOffset = 0.0f;
+                                zVertOffset = uvCoords[2*v + 1];
+                            } else { // dim == 2
+                                xVertOffset = uvCoords[2*v];
+                                yVertOffset = uvCoords[2*v + 1];
+                                zVertOffset = 0.0f;
+                            }
                             // offsets by 1 in x, y, and z direction to create parallel faces
                             float xFaceOffset = (face == 3) ? 1.0f : 0.0f;
                             float yFaceOffset = (face == 4) ? 1.0f : 0.0f;
                             float zFaceOffset = (face == 5) ? 1.0f : 0.0f;
                             // need to support different textures by side
                             // current dim scheme (face = 0 through 5)
-                            // SOUTH, WEST, DOWN, NORTH, EAST, UP
+                            // WEST, DOWN, NORTH, EAST, UP, SOUTH
                             chunkVertices.emplace_back(
                                     //                           mesh corner + block corner + 1/0 + UV
                                     static_cast<GLfloat>(position.pos.x + i + xVertOffset + xFaceOffset),
