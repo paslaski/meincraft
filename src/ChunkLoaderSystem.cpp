@@ -25,6 +25,7 @@ void ChunkLoaderSystem::createChunk(entt::registry& registry)
     std::vector<BlockType> blocks(CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE, BlockType::GRASS);
     blocks[0] = BlockType::COBBLESTONE;
     blocks[CHUNK_SIZE-1] = BlockType::SAND;
+    blocks[CHUNK_SIZE-2] = AIR;
     blocks[CHUNK_SIZE*CHUNK_SIZE-1] = BlockType::STONE;
     // bool hasChanged, std::vector<BlockType> blocks
     registry.emplace<BlockComponent>(chunk, true, blocks);

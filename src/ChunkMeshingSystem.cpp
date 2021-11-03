@@ -51,6 +51,8 @@ void ChunkMeshingSystem::constructMesh(entt::entity& chunk, entt::registry& regi
             for (int i = 0; i < CHUNK_SIZE; i++)
                 for (int face = 0; face < 6; face++) // 6 faces for each cube
                     for (int v = 0; v < 6; v++) { // 6 vertices for each face
+                        if (blocks.at(i, j, k) == AIR)
+                            continue;
                         int dim = face % 3;
                         // follows UV coordinates of texture across 2D face surface
                         // also aligns UV with position in world space
@@ -107,7 +109,10 @@ void ChunkMeshingSystem::greedyMesh(entt::entity &chunk, entt::registry &registr
     };
 
 
-    // greedy meshing algorithm
+    // GREEDY MESHING ALGORITHM
+
+    // sweep over each dimension (constructs both faces per dim)
+
 
 
     // note that new mesh was constructed based on changes
