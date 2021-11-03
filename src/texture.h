@@ -18,11 +18,7 @@ public:
     void GenerateTexture2D();
     void GenerateTexture2DArray();
 
-//    static float indexOf(BlockType block) { return blockIndexTable[block]; }
-
 private:
-//    static std::unordered_map<BlockType, float> blockIndexTable;
-
     unsigned int m_TextureId;
     GLenum m_Target;
 
@@ -36,7 +32,7 @@ private:
 struct texArrayVertex
 {
     GLfloat xWorldPos; GLfloat yWorldPos; GLfloat zWorldPos;
-    GLfloat uTexCoord;GLfloat vTexCoord; GLfloat pictureNum;
+    GLfloat uTexCoord; GLfloat vTexCoord; GLfloat pictureNum;
 
     texArrayVertex(GLfloat xPos, GLfloat yPos, GLfloat zPos,
                    GLfloat uCoord, GLfloat vCoord, GLfloat picNum)
@@ -44,10 +40,3 @@ struct texArrayVertex
               uTexCoord(uCoord), vTexCoord(vCoord), pictureNum(picNum)
     {};
 };
-
-//// supports limited list for now
-//std::unordered_map<BlockType, float> Texture::blockIndexTable =
-//        {
-//                {AIR, NULL}, // should never be drawn
-//                {}
-//        };

@@ -37,8 +37,6 @@ public:
     World();
     ~World();
 
-    Entity create_entity(std::string tag);
-
     void update();
 
     bool isDestroyed();

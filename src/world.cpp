@@ -1,8 +1,5 @@
+
 #include "world.h"
-
-#include <string>
-#include "entity.h"
-
 
 World::World()
     : renderSystem(RenderSystem()), registry(entt::registry()),
@@ -15,13 +12,6 @@ World::World()
 
 World::~World()
 {}
-
-Entity World::create_entity(std::string tag)
-{
-    Entity entity(registry.create(), this);
-    entity.add_component<TagComponent>(tag);
-    return entity;
-}
 
 void World::update()
 {

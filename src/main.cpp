@@ -2,16 +2,10 @@
 #include <fstream>
 #include <sstream>
 
-#include <math.h>
-
-#include <entt.hpp>
-#include "entity.h"
-
+#include "world.h"
 
 int main() {
     World world;
-
-//    Chunk::createChunk(world);
 
     // ECS game loop
     while (!world.isDestroyed())

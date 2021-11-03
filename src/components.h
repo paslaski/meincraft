@@ -4,7 +4,7 @@
 #include <glm/vec3.hpp>
 #include "block.h"
 #include "chunk.h"
-#include "mesh.h"
+#include "texture.h"
 
 struct TagComponent
 {
@@ -15,12 +15,6 @@ struct PositionComponent
 {
     // eventually change to array representation with [xPos1 yPos1 zPos1 t1Coord1 t2Coord1...]
     glm::vec3 pos;
-};
-
-struct DrawableComponent
-{
-    bool hasUpdated;
-    float vbo[];
 };
 
 struct BlockComponent
@@ -47,6 +41,7 @@ struct MeshComponent // can add more VBOs for different rendering processes
     // disable copying and enable moving
     MeshComponent(bool b, unsigned int vbo, std::vector<texArrayVertex> vertices)
         : mustUpdateBuffer(b), blockVBO(std::move(vbo)), chunkVertices(vertices) {};
+    ~MeshComponent() { glDeleteBuffers(1, &blockVBO); }
     MeshComponent(const MeshComponent&) = delete;
     MeshComponent operator=(const MeshComponent&) = delete;
     MeshComponent(MeshComponent&&) = default;

@@ -1,7 +1,6 @@
 
 #include "ChunkMeshingSystem.h"
 #include "components.h"
-#include "block.h"
 
 ChunkMeshingSystem::ChunkMeshingSystem()
 {}
@@ -91,3 +90,42 @@ void ChunkMeshingSystem::constructMesh(entt::entity& chunk, entt::registry& regi
     registry.get<BlockComponent>(chunk).hasChanged = false;
     registry.get<MeshComponent>(chunk).mustUpdateBuffer = true;
 }
+
+void ChunkMeshingSystem::greedyMesh(entt::entity &chunk, entt::registry &registry)
+{
+    // retrieve refs to block data & vertex storage
+    BlockComponent& blocks = registry.get<BlockComponent>(chunk);
+    std::vector<texArrayVertex>& vertices = registry.get<MeshComponent>(chunk).chunkVertices;
+    glm::vec3& pos = registry.get<PositionComponent>(chunk).pos;
+
+    vertices.clear(); // delete old vertex data
+
+    // aligns direction with faces 0-5 in loop
+    // WEST, DOWN, NORTH, EAST, UP, SOUTH
+    Direction dir[] = {
+            WEST, DOWN, NORTH, EAST, UP, SOUTH
+    };
+
+
+    // greedy meshing algorithm
+
+
+    // note that new mesh was constructed based on changes
+    // pretty sure this is an lvalue so this works
+    registry.get<BlockComponent>(chunk).hasChanged = false;
+    registry.get<MeshComponent>(chunk).mustUpdateBuffer = true;
+}
+
+// appends a face to the texArrayVertex vector (two triangles/6 vertices, "quad" for short)
+void ChunkMeshingSystem::quad(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 v4,
+                              BlockType block, Direction dir, std::vector<texArrayVertex>& vertices) {
+    float uvCoords[] = {
+            0.0f, 0.0f, // first triangle on face
+            1.0f, 0.0f,
+            0.0f, 1.0f,
+            0.0f, 1.0f, // second triangle on face
+            1.0f, 1.0f,
+            1.0f, 0.0f
+    };
+}
+

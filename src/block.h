@@ -28,8 +28,3 @@ enum Direction
 };
 
 BlockType sideLookup(BlockType block, Direction direction);
-
-//struct Block {
-//    BlockType block = BlockType::DIRT; // = Block::BlockType::AIR;
-//    // lighting
-//};
