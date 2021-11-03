@@ -12,6 +12,8 @@
 #include "components.h"
 #include "rendersystem.h"
 #include "inputsystem.h"
+#include "ChunkLoaderSystem.h"
+#include "ChunkMeshingSystem.h"
 
 class Entity;
 
@@ -22,6 +24,8 @@ private:
 
     RenderSystem renderSystem;
     InputSystem inputSystem;
+    ChunkLoaderSystem chunkLoaderSystem;
+    ChunkMeshingSystem chunkMeshingSystem;
 
     // timing
     float deltaTime = 0.0f;	// time between current frame and last frame

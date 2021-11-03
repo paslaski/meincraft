@@ -12,6 +12,7 @@ enum BlockType // : uint8_t
     GRASS_TOP = 3*16 + 12,
     COBBLESTONE = 14*16 + 0,
     SAND = 14*16 + 2,
+    WOOL_YELLOW = 5*16 + 2
 };
 
 // current dim scheme (face = 0 through 5)

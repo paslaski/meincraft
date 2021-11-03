@@ -5,12 +5,12 @@
 #include <entt.hpp>
 #include "texture.h"
 #include "shader.h"
+#include "components.h"
 
 class Camera;
 
 class RenderSystem {
 public:
-
     RenderSystem();
     ~RenderSystem();
 
@@ -19,16 +19,17 @@ public:
     Camera* get_camera() { return &camera; };
 
 private:
-
     GLFWwindow* window;
     Camera camera;
 
-    std::shared_ptr<Texture> textureAtlas;
-    std::shared_ptr<Shader> simpleShader;
-    std::shared_ptr<Texture> textureArray;
-    std::shared_ptr<Shader> textureArrayShader;
+    std::unique_ptr<Texture> textureArray;
+    std::unique_ptr<Shader> textureArrayShader;
 
-    void create_window();
+    void renderChunks(entt::registry& registry);
+    void setBlockVAO();
+    void bindBuffer(MeshComponent& meshComponent);
+
+    void createWindow();
     void load_cube_vbo_vao();
     void load_cube_vbo_vao_texture_array();
 
@@ -37,7 +38,6 @@ private:
 
     static void clear_buffers();
     void simple_render_chunk(entt::registry& registry);
-    void render_dirt_system(entt::registry& registry);
 
     // settings and constants
     const unsigned int SCR_WIDTH = 800;
@@ -45,6 +45,8 @@ private:
 
     unsigned int VBO, VAO;
     unsigned int cVBO, cVAO;
+
+    unsigned int blockVAO;
 
 };
 

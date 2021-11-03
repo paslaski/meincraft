@@ -5,7 +5,8 @@
 #include <stb_image.h>
 #include <vector>
 
-Texture::Texture(const std::string& texturePath, GLenum target) : m_Path(texturePath), m_Target(target), m_LocalBuffer(nullptr)
+Texture::Texture(const std::string& texturePath, GLenum target)
+    : m_Path(texturePath), m_Target(target), m_LocalBuffer(nullptr), m_TextureId(0)
 {
     GLCall(glGenTextures(1, &m_TextureId));
 

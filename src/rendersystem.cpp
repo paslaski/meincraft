@@ -1,5 +1,5 @@
 #include "rendersystem.h"
-#include "components.h"
+#include "debug.h"
 
 #include <iostream>
 #include <glad/glad.h>
@@ -7,37 +7,29 @@
 
 RenderSystem::RenderSystem()
 {
+    // create GLFW window
+    createWindow();
     // initialize camera
     camera = Camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
-    // create GLFW window and prepare block textures
-    create_window();
-//    load_cube_vbo_vao();
-
-//    textureAtlas = std::make_shared<Texture>("/Users/robpaslaski/Documents/meincraft/img/texture_atlas.png", GL_TEXTURE_2D);
-//    simpleShader = std::make_shared<Shader>("/Users/robpaslaski/Documents/meincraft/src/simpleVertex.glsl",
-//                        "/Users/robpaslaski/Documents/meincraft/src/simpleFragment.glsl");
-//    simpleShader->Bind();
-//    simpleShader->SetUniform1i("ourTexture", 0);
-//    textureAtlas->Bind();
-
-    textureArray = std::make_shared<Texture>("/Users/robpaslaski/Documents/meincraft/img/texture_atlas.png", GL_TEXTURE_2D_ARRAY);
-    textureArrayShader = std::make_shared<Shader>("/Users/robpaslaski/Documents/meincraft/src/arrayVertex.glsl",
-                                            "/Users/robpaslaski/Documents/meincraft/src/arrayFragment.glsl");
+    // instantiate texture array & associated shader for blocks
+    textureArray = std::make_unique<Texture>("/Users/robpaslaski/Documents/meincraft/img/texture_atlas.png",
+                                             GL_TEXTURE_2D_ARRAY);
+    textureArrayShader = std::make_unique<Shader>("/Users/robpaslaski/Documents/meincraft/src/arrayVertex.glsl",
+                                                  "/Users/robpaslaski/Documents/meincraft/src/arrayFragment.glsl");
     textureArrayShader->Bind();
-    textureArrayShader->SetUniform1i("arrayTexture", 0);
-    textureArray->Bind();
+    textureArrayShader->SetUniform1i("arrayTexture", 0); // array texture sampler
+    textureArrayShader->Unbind();
 
-    set_chunk_vao();
+    // create vertex array object for rendering blocks in chunk
+    GLCall(glGenVertexArrays(1, &blockVAO));
 }
 
 RenderSystem::~RenderSystem()
 {
-    // de-allocate all resources
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
+    // de-allocate all OpenGL resources
+    GLCall(glDeleteVertexArrays(1, &blockVAO));
 
-    // clear previously allocated GLFW resources.
     glfwTerminate();
 }
 
@@ -45,23 +37,71 @@ void RenderSystem::update(entt::registry& registry)
 {
     clear_buffers();
 
-    simple_render_chunk(registry);
+//    simple_render_chunk(registry);
 //    render_dirt_system(registry);
+    renderChunks(registry);
 
     glfwSwapBuffers(window);
 }
-void print_cubes(std::vector<texArrayVertex>& vertices)
+
+void RenderSystem::renderChunks(entt::registry& registry)
 {
-    for (int faces = 0; faces < 6; faces++)
+    // bind appropriate texture array, shader, and VAO for blocks
+    textureArray->Bind();
+    textureArrayShader->Bind();
+    GLCall(glBindVertexArray(blockVAO));
+
+    // create transformations
+    glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+    glm::mat4 view = camera.GetViewMatrix();
+
+    // pass transformation matrices to the shader
+    textureArrayShader->SetUniformMat4f("projection", projection);
+    textureArrayShader->SetUniformMat4f("view", view);
+
+    // later when multiple mesh types:
+    // master renderer iterates through MeshComp view, feeds chunks to renderChunk, water to renderWater, etc.
+    auto meshView = registry.view<MeshComponent>();
+    for (const entt::entity& meshEntity : meshView)
     {
-        for (int vertex = 0; vertex < 6; vertex++) {
-            texArrayVertex curVertex = vertices[faces*6 + vertex];
-            std::cout << "Face " << faces << " " << "Vertex " << vertex << ":\nx=" << curVertex.xWorldPos << "   " <<
-                         "y=" << curVertex.yWorldPos << "   " << "z=" << curVertex.zWorldPos << std::endl;
-        }
+        MeshComponent& meshComp = meshView.get<MeshComponent>(meshEntity);
+        bindBuffer(meshComp); // bind VBO, send updated data to GPU if necessary
+        GLCall(glDrawArrays(GL_TRIANGLES, 0, meshComp.chunkVertices.size())); // draw call
     }
-    std::cout << "------------------------------------------" << std::endl;
-};
+
+    // unbind, don't want persistent side effect
+    textureArray->Unbind();
+    textureArrayShader->Unbind();
+}
+
+void RenderSystem::bindBuffer(MeshComponent& meshComponent)
+{
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, meshComponent.blockVBO)); // bind VBO
+    if (meshComponent.mustUpdateBuffer) // only send new data to GPU if necessary
+    {
+        GLCall(glBufferData(GL_ARRAY_BUFFER, meshComponent.chunkVertices.size() * sizeof(texArrayVertex),
+                     &meshComponent.chunkVertices[0], GL_STATIC_DRAW));
+        meshComponent.mustUpdateBuffer = false; // note that buffer doesn't need updating until changed
+    }
+    setBlockVAO();
+}
+
+void RenderSystem::setBlockVAO()
+{
+    // generate OpenGL VAO object
+    GLCall(glGenVertexArrays(1, &blockVAO));
+    GLCall(glBindVertexArray(blockVAO));
+
+    // position attribute (3 GLfloats)
+    GLCall(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(texArrayVertex), (void*)0));
+    GLCall(glEnableVertexAttribArray(0));
+
+    // texture coord attribute (3 GLfloats)
+    // do we need to specify last as int instead of float?
+    GLCall(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(texArrayVertex), (void*)offsetof(texArrayVertex, uTexCoord)));
+    GLCall(glEnableVertexAttribArray(1));
+}
+
 void RenderSystem::simple_render_chunk(entt::registry& registry)
 {
     // wireframe for debugging
@@ -96,6 +136,8 @@ void RenderSystem::simple_render_chunk(entt::registry& registry)
     // range for to iterate over registry view, returning all chunks w/ components
     for (auto [entity, position, blocks] : registry.view<PositionComponent, BlockComponent>().each() )
     {
+//        auto& cur_ent_pos = registry.get<PositionComponent>(entity);
+//        std::cout << cur_ent_pos.pos.x << std::endl;
         // position.pos refers to (i, j, k) = (0, 0, 0) in world coordinates
         // i, j, k refer to block position in chunk coordinates
         for (int k = 0; k < CHUNK_SIZE; k++)
@@ -138,8 +180,6 @@ void RenderSystem::simple_render_chunk(entt::registry& registry)
                         }
     }
     set_chunk_vbo(chunkVertices);
-    print_cubes(chunkVertices);
-    std::cout << chunkVertices.size() << std::endl;
     glDrawArrays(GL_TRIANGLES, 0, chunkVertices.size());
 }
 
@@ -161,35 +201,12 @@ void RenderSystem::set_chunk_vbo(std::vector<texArrayVertex>& vertices)
 {
     glGenBuffers(1, &cVBO);
     glBindBuffer(GL_ARRAY_BUFFER, cVBO);
+    // depends on hasUpdated?
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(texArrayVertex), &vertices[0], GL_STATIC_DRAW);
+    // update mustUpdateBuffer after draw
 }
 
-void RenderSystem::render_dirt_system(entt::registry& registry)
-{
-
-    for (auto [entity, position] : registry.view<PositionComponent>().each())
-    {
-        // create transformations
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        glm::mat4 view = camera.GetViewMatrix();
-
-        // pass transformation matrices to the shader
-        // note: currently we set the projection matrix each frame, but since the projection
-        // matrix rarely changes it's often best practice to set it outside the main loop only once.
-        simpleShader->SetUniformMat4f("projection", projection);
-        simpleShader->SetUniformMat4f("view", view);
-
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, position.pos);
-
-        simpleShader->SetUniformMat4f("model",  model);
-
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-    }
-
-}
-
-void RenderSystem::create_window()
+void RenderSystem::createWindow()
 {
     glfwInit();
     // configure GLFW from enum list before instantiating window
