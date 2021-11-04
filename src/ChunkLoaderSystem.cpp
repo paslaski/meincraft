@@ -27,6 +27,14 @@ void ChunkLoaderSystem::createChunk(entt::registry& registry)
     blocks[CHUNK_SIZE-1] = BlockType::SAND;
     blocks[CHUNK_SIZE-2] = AIR;
     blocks[CHUNK_SIZE*CHUNK_SIZE-1] = BlockType::STONE;
+    for (int i = 3; i < 8; i++)
+        for (int j = 5; j < 7; j++)
+            blocks[i + j*CHUNK_SIZE] = LADDER;
+
+    for (int j = 8; j < 12; j++)
+        for (int k = 3; k < 9; k++)
+            blocks[j*CHUNK_SIZE + k*CHUNK_SIZE*CHUNK_SIZE] = LADDER;
+
     // bool hasChanged, std::vector<BlockType> blocks
     registry.emplace<BlockComponent>(chunk, true, blocks);
 

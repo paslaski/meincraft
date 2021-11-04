@@ -30,14 +30,14 @@ void ChunkMeshingSystem::constructMesh(entt::entity& chunk, entt::registry& regi
 
     vertices.clear(); // delete old vertex data
 
-    float uvCoords[] = {
-            0.0f, 0.0f, // first triangle on face
-            1.0f, 0.0f,
-            0.0f, 1.0f,
-            0.0f, 1.0f, // second triangle on face
-            1.0f, 1.0f,
-            1.0f, 0.0f
-    };
+//    float uvCoords[] = {
+//            0.0f, 0.0f, // first triangle on face
+//            1.0f, 0.0f,
+//            0.0f, 1.0f,
+//            0.0f, 1.0f, // second triangle on face
+//            1.0f, 1.0f,
+//            1.0f, 0.0f
+//    };
     // aligns direction with faces 0-5 in loop
     // WEST, DOWN, NORTH, EAST, UP, SOUTH
     Direction dir[] = {
@@ -97,6 +97,8 @@ void ChunkMeshingSystem::constructMesh(entt::entity& chunk, entt::registry& regi
 
 void ChunkMeshingSystem::greedyMesh(entt::entity &chunk, entt::registry &registry)
 {
+    // // wireframes for debugging
+//     glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     // retrieve refs to block data & vertex storage
     BlockComponent& blocks = registry.get<BlockComponent>(chunk);
     std::vector<texArrayVertex>& vertices = registry.get<MeshComponent>(chunk).chunkVertices;
@@ -104,11 +106,8 @@ void ChunkMeshingSystem::greedyMesh(entt::entity &chunk, entt::registry &registr
 
     vertices.clear(); // delete old vertex data
 
-    // aligns direction with faces 0-5 in loop
-    // WEST, DOWN, NORTH, EAST, UP, SOUTH
-    Direction dir[] = {
-            WEST, DOWN, NORTH, EAST, UP, SOUTH
-    };
+    Direction bFaceDirs[3] = {EAST, UP, NORTH};
+    Direction fFaceDirs[3] = {WEST, DOWN, SOUTH};
 
     // ---------------------- GREEDY MESHING ALGORITHM ----------------------
 
@@ -116,7 +115,8 @@ void ChunkMeshingSystem::greedyMesh(entt::entity &chunk, entt::registry &registr
     // dim = dimension perpendicular to mask face
     for (int dim = 0; dim < 3; dim++)
     {
-        std::cout << "\nDim: " << dim << std::endl;
+        Direction bDir = bFaceDirs[dim];
+        Direction fDir = fFaceDirs[dim];
         // track dimensions of mask plane
         int u = (dim + 1) % 3;
         int v = (dim + 2) % 3;
@@ -136,9 +136,13 @@ void ChunkMeshingSystem::greedyMesh(entt::entity &chunk, entt::registry &registr
                 for (curVox[u] = 0; curVox[u] < CHUNK_SIZE; curVox[u]++)
                 {
                     // voxels behind + in front of face of interest
-                    BlockType bFace = (curVox[dim] >= 0) ? blocks.at(curVox[0], curVox[1], curVox[2]) : AIR;
+                    BlockType bFace = (curVox[dim] >= 0) ?
+                            sideLookup(blocks.at(curVox[0], curVox[1], curVox[2]), bDir) : AIR;
                     BlockType fFace = (curVox[dim] < CHUNK_SIZE - 1) ?
-                            blocks.at(curVox[0] + dVec[0], curVox[1] + dVec[1], curVox[2] + dVec[2]) : AIR;
+                            sideLookup(blocks.at(curVox[0] + dVec[0],
+                                                 curVox[1] + dVec[1],
+                                                 curVox[2] + dVec[2]), fDir)
+                                                 : AIR;
 
                     // only draw face if EXACTLY one side is AIR
                     mask[curVox[u] + curVox[v]*CHUNK_SIZE] = ((bFace != AIR) != (fFace != AIR)) ? ((bFace != AIR) ? bFace : fFace) : AIR;
@@ -203,7 +207,7 @@ void ChunkMeshingSystem::greedyMesh(entt::entity &chunk, entt::registry &registr
 
                     // TODO: include normals in .equals() to support 6 unique faces instead of 3 (also lighting values)
                     Direction dirs[3] = {WEST, DOWN, SOUTH};
-                    appendQuad(vStart, vU, vV, vEnd, curFace, dirs[dim], vertices);
+                    appendQuad(vStart, vU, vV, vEnd, curFace, width, height, dirs[dim], vertices);
 
                     // clear mask for subsequent passes (prevents drawing same face again)
                     for (int h = 0; h < height; h++)
@@ -224,22 +228,32 @@ void ChunkMeshingSystem::greedyMesh(entt::entity &chunk, entt::registry &registr
 
 // appends a face to the texArrayVertex vector (two triangles/6 vertices, "quad" for short)
 void ChunkMeshingSystem::appendQuad(glm::vec3 vStart, glm::vec3 vWidth, glm::vec3 vHeight, glm::vec3 vEnd,
-                              BlockType block, Direction dir, std::vector<texArrayVertex>& vertices) {
-    float uvCoords[] = {
-            0.0f, 0.0f, // first triangle on face
-            1.0f, 0.0f,
-            0.0f, 1.0f,
-            0.0f, 1.0f, // second triangle on face
-            1.0f, 1.0f,
-            1.0f, 0.0f
-    };
+                              BlockType block, int width, int height,
+                              Direction dir, std::vector<texArrayVertex>& vertices) {
 
-    vertices.emplace_back(vStart.x, vStart.y, vStart.z, uvCoords[0], uvCoords[1], sideLookup(block, dir));
-    vertices.emplace_back(vWidth.x, vWidth.y, vWidth.z, uvCoords[2], uvCoords[3], sideLookup(block, dir));
-    vertices.emplace_back(vHeight.x, vHeight.y, vHeight.z, uvCoords[4], uvCoords[5], sideLookup(block, dir));
-    vertices.emplace_back(vHeight.x, vHeight.y, vHeight.z, uvCoords[6], uvCoords[7], sideLookup(block, dir));
-    vertices.emplace_back(vEnd.x, vEnd.y, vEnd.z, uvCoords[8], uvCoords[9], sideLookup(block, dir));
-    vertices.emplace_back(vWidth.x, vWidth.y, vWidth.z, uvCoords[10], uvCoords[11], sideLookup(block, dir));
-    std::cout << "x: " << vStart.x << " y: " << vStart.y << " z: " << vStart.z << std::endl;
+    // draw out the UV coords on paper to ensure sides drawn same, top/bottom face same way
+    // make a new member variable array, indexed by Direction, of uvCoords arrays
+    // might need to std::swap width/height for WEST/EAST... similar for DOWN/UP?
+    // ^ NEED MORE COMPLICATED TESTS AFTER
+
+    // WEST EAST messed up
+    if (dir == WEST || dir == EAST)
+    {
+        vertices.emplace_back(vStart.x, vStart.y, vStart.z, uvCoords[1]*height, uvCoords[0]*width, sideLookup(block, dir));
+        vertices.emplace_back(vWidth.x, vWidth.y, vWidth.z, uvCoords[3]*height, uvCoords[2]*width, sideLookup(block, dir));
+        vertices.emplace_back(vHeight.x, vHeight.y, vHeight.z, uvCoords[5]*height, uvCoords[4]*width, sideLookup(block, dir));
+        vertices.emplace_back(vHeight.x, vHeight.y, vHeight.z, uvCoords[7]*height, uvCoords[6]*width, sideLookup(block, dir));
+        vertices.emplace_back(vEnd.x, vEnd.y, vEnd.z, uvCoords[9]*height, uvCoords[8]*width, sideLookup(block, dir));
+        vertices.emplace_back(vWidth.x, vWidth.y, vWidth.z, uvCoords[11]*height, uvCoords[10]*width, sideLookup(block, dir));
+    } else
+    {
+        vertices.emplace_back(vStart.x, vStart.y, vStart.z, uvCoords[0]*width, uvCoords[1]*height, sideLookup(block, dir));
+        vertices.emplace_back(vWidth.x, vWidth.y, vWidth.z, uvCoords[2]*width, uvCoords[3]*height, sideLookup(block, dir));
+        vertices.emplace_back(vHeight.x, vHeight.y, vHeight.z, uvCoords[4]*width, uvCoords[5]*height, sideLookup(block, dir));
+        vertices.emplace_back(vHeight.x, vHeight.y, vHeight.z, uvCoords[6]*width, uvCoords[7]*height, sideLookup(block, dir));
+        vertices.emplace_back(vEnd.x, vEnd.y, vEnd.z, uvCoords[8]*width, uvCoords[9]*height, sideLookup(block, dir));
+        vertices.emplace_back(vWidth.x, vWidth.y, vWidth.z, uvCoords[10]*width, uvCoords[11]*height, sideLookup(block, dir));
+    }
+
 }
 
