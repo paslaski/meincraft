@@ -2,9 +2,11 @@
 
 enum BlockType // : uint8_t
 {
+    // NOTE: AIR must be default value of BlockType
+    AIR = 0,
+
     // must correspond to texture atlas position
-    // NOTE: 0-indexed positions
-    AIR,
+    // NOTE: 1-indexed positions
     STONE = 15*16 + 1,
     DIRT = 15*16 + 2,
     GRASS,
