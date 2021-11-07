@@ -1,6 +1,6 @@
 #pragma once
 
-#include "camera.h"
+#include "Camera.h"
 #include <GLFW/glfw3.h>
 #include <entt.hpp>
 

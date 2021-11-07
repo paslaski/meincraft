@@ -1,6 +1,6 @@
 
-#include "texture.h"
-#include "debug.h"
+#include "Texture.h"
+#include "Debug.h"
 
 #include <stb_image.h>
 #include <vector>

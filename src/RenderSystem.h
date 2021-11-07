@@ -1,11 +1,11 @@
 #pragma once
 
-#include "camera.h"
+#include "Camera.h"
 #include <GLFW/glfw3.h>
 #include <entt.hpp>
-#include "texture.h"
-#include "shader.h"
-#include "components.h"
+#include "Texture.h"
+#include "Shader.h"
+#include "Components.h"
 
 class Camera;
 

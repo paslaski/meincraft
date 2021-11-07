@@ -9,9 +9,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "components.h"
-#include "rendersystem.h"
-#include "inputsystem.h"
+#include "Components.h"
+#include "RenderSystem.h"
+#include "InputSystem.h"
 #include "ChunkLoaderSystem.h"
 #include "ChunkMeshingSystem.h"
 

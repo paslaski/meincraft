@@ -3,9 +3,9 @@
 
 #include "ChunkLoaderSystem.h"
 
-#include "chunk.h"
-#include "block.h"
-#include "components.h"
+#include "Chunk.h"
+#include "Block.h"
+#include "Components.h"
 
 ChunkLoaderSystem::ChunkLoaderSystem()
 {}

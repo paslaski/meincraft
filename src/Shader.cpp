@@ -4,8 +4,8 @@
 #include <fstream>
 #include <sstream>
 
-#include "shader.h"
-#include "debug.h"
+#include "Shader.h"
+#include "Debug.h"
 
 Shader::Shader(std::string vertexPath, std::string fragmentPath)
 {

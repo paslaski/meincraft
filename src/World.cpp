@@ -1,5 +1,5 @@
 
-#include "world.h"
+#include "World.h"
 
 World::World()
     : renderSystem(RenderSystem()), registry(entt::registry()),

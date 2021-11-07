@@ -2,7 +2,7 @@
 #include <fstream>
 #include <sstream>
 
-#include "world.h"
+#include "World.h"
 
 int main() {
     World world;

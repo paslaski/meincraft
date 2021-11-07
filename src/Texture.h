@@ -3,7 +3,7 @@
 #include <string>
 #include <glad/glad.h>
 #include <unordered_map>
-#include "block.h"
+#include "Block.h"
 
 class Texture
 {

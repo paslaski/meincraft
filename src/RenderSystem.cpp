@@ -1,5 +1,5 @@
-#include "rendersystem.h"
-#include "debug.h"
+#include "RenderSystem.h"
+#include "Debug.h"
 
 #include <iostream>
 #include <glad/glad.h>
@@ -15,8 +15,8 @@ RenderSystem::RenderSystem()
     // instantiate texture array & associated shader for blocks
     textureArray = std::make_unique<Texture>("/Users/robpaslaski/Documents/meincraft/img/texture_atlas.png",
                                              GL_TEXTURE_2D_ARRAY);
-    textureArrayShader = std::make_unique<Shader>("/Users/robpaslaski/Documents/meincraft/src/arrayVertex.glsl",
-                                                  "/Users/robpaslaski/Documents/meincraft/src/arrayFragment.glsl");
+    textureArrayShader = std::make_unique<Shader>("/Users/robpaslaski/Documents/meincraft/src/ArrayVertex.glsl",
+                                                  "/Users/robpaslaski/Documents/meincraft/src/ArrayFragment.glsl");
     textureArrayShader->Bind();
     textureArrayShader->SetUniform1i("arrayTexture", 0); // array texture sampler
     textureArrayShader->Unbind();

@@ -2,9 +2,9 @@
 
 #include <string>
 #include <glm/vec3.hpp>
-#include "block.h"
-#include "chunk.h"
-#include "texture.h"
+#include "Block.h"
+#include "Chunk.h"
+#include "Texture.h"
 
 struct TagComponent
 {

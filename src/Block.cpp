@@ -1,7 +1,7 @@
 
 #include <array>
 #include <unordered_map>
-#include "block.h"
+#include "Block.h"
 
 std::unordered_map<BlockType, std::array<BlockType, 6>> sideEnumerator = {
         // current dim scheme (face = 0 through 5)

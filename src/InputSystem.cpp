@@ -1,7 +1,7 @@
 // NOTE: might replace callbacks with more comprehensive InputSystem events
 // probably only necessary if things like inventory implemented
 
-#include "inputsystem.h"
+#include "InputSystem.h"
 
 InputSystem::InputSystem() : window(NULL), camera(NULL)
 {}

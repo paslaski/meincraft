@@ -4,8 +4,8 @@
 #include <glad/glad.h>
 #include <glm/vec3.hpp>
 
-#include "block.h"
-#include "texture.h"
+#include "Block.h"
+#include "Texture.h"
 
 class ChunkMeshingSystem {
 public:

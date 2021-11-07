@@ -1,6 +1,6 @@
 
 #include "ChunkMeshingSystem.h"
-#include "components.h"
+#include "Components.h"
 #include <iostream>
 
 ChunkMeshingSystem::ChunkMeshingSystem()
@@ -23,6 +23,7 @@ void ChunkMeshingSystem::update(entt::registry& registry)
 
 void ChunkMeshingSystem::constructMesh(entt::entity& chunk, entt::registry& registry)
 {
+//    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     // retrieve refs to block data & vertex storage
     BlockComponent& blocks = registry.get<BlockComponent>(chunk);
     std::vector<texArrayVertex>& vertices = registry.get<MeshComponent>(chunk).chunkVertices;
@@ -30,14 +31,6 @@ void ChunkMeshingSystem::constructMesh(entt::entity& chunk, entt::registry& regi
 
     vertices.clear(); // delete old vertex data
 
-//    float uvCoords[] = {
-//            0.0f, 0.0f, // first triangle on face
-//            1.0f, 0.0f,
-//            0.0f, 1.0f,
-//            0.0f, 1.0f, // second triangle on face
-//            1.0f, 1.0f,
-//            1.0f, 0.0f
-//    };
     // aligns direction with faces 0-5 in loop
     // WEST, DOWN, NORTH, EAST, UP, SOUTH
     Direction dir[] = {
