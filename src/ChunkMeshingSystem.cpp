@@ -139,7 +139,6 @@ void ChunkMeshingSystem::greedyMesh(entt::entity &chunk, entt::registry &registr
 
                     // only draw face if EXACTLY one side is AIR
                     mask[curVox[u] + curVox[v]*CHUNK_SIZE] = ((bFace != AIR) != (fFace != AIR)) ? ((bFace != AIR) ? bFace : fFace) : AIR;
-                    // TODO: look up GRASS_SIDE,GRASS_TOP, DIRT before adding to mesh
                 }
 
             // starts at -1 for first face, which is truly at 0 relative to chunk --> inc reflects face position

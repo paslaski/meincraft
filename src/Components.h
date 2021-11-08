@@ -24,9 +24,8 @@ struct BlockComponent
     // include array of 8 bit enums corresponding to block types
     std::vector<BlockType> blocks = std::vector<BlockType>(CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE, AIR);
 
-    // retrieve block at 3D index (i, j, k) from 1D array
-    BlockType at(int i, int j, int k) {
-        return blocks[i + (j * CHUNK_SIZE) + (k * CHUNK_SIZE*CHUNK_SIZE)];
+    BlockType at(int x, int y, int z) {
+        return blocks[x + (z * CHUNK_SIZE) + (y * CHUNK_SIZE*CHUNK_SIZE)];
     }
 };
 
