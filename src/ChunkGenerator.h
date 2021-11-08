@@ -31,7 +31,7 @@ private:
     const float gain;
 
     const int minHeight = 6;
-    const int maxHeight = CHUNK_SIZE - 1;
+    const int maxHeight = CHUNK_HEIGHT - 1;
 
-    const int chunkWidth = CHUNK_SIZE;
+    const int chunkWidth = CHUNK_WIDTH;
 };

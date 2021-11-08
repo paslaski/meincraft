@@ -15,7 +15,7 @@ ChunkGenerator::~ChunkGenerator()
 {}
 
 void ChunkGenerator::generateChunk(glm::vec3 pos) {
-    std::vector<BlockType> blocks(chunkWidth*chunkWidth*chunkWidth, AIR);
+    std::vector<BlockType> blocks(CHUNK_WIDTH*CHUNK_HEIGHT*CHUNK_WIDTH, AIR);
 
     std::vector<int> heightmap = generateHeightmap(pos);
 
@@ -43,40 +43,40 @@ void ChunkGenerator::createChunkEntity(std::vector<BlockType>& blocks, glm::vec3
 
 void ChunkGenerator::assignBlocks(std::vector<BlockType>& blocks, std::vector<int>& heightmap)
 {
-    for (int z = 0; z < chunkWidth; z++)
-        for (int x = 0; x < chunkWidth; x++) {
+    for (int z = 0; z < CHUNK_WIDTH; z++)
+        for (int x = 0; x < CHUNK_WIDTH; x++) {
             int y = maxHeight;
 
-            while (y > heightmap[x + z*chunkWidth]) {
-                blocks[x + z * chunkWidth + y * chunkWidth * chunkWidth] = AIR;
+            while (y > heightmap[x + z*CHUNK_WIDTH]) {
+                blocks[x + z * CHUNK_WIDTH + y * CHUNK_WIDTH * CHUNK_WIDTH] = AIR;
                 y--;
             }
 
             if (y >= 0) {
-                blocks[x + z * chunkWidth + y * chunkWidth * chunkWidth] = GRASS;
+                blocks[x + z * CHUNK_WIDTH + y * CHUNK_WIDTH * CHUNK_WIDTH] = GRASS;
                 y--;
             }
             for (int numDirt = 0; y >= 0 && numDirt < 3; numDirt++) {
-                blocks[x + z * chunkWidth + y * chunkWidth * chunkWidth] = DIRT;
+                blocks[x + z * CHUNK_WIDTH + y * CHUNK_WIDTH * CHUNK_WIDTH] = DIRT;
                 y--;
             }
             while (y >= 0) {
-                blocks[x + z * chunkWidth + y * chunkWidth * chunkWidth] = STONE;
+                blocks[x + z * CHUNK_WIDTH + y * CHUNK_WIDTH * CHUNK_WIDTH] = STONE;
                 y--;
             }
         }
 }
 
 std::vector<int> ChunkGenerator::generateHeightmap(glm::vec3 chunkPos) {
-    std::vector<int> heightmap(chunkWidth*chunkWidth, 0);
+    std::vector<int> heightmap(CHUNK_WIDTH*CHUNK_WIDTH, 0);
 
     auto scale = [this](float val) { return static_cast<int>((val + 1.0)*(maxHeight-minHeight)/2.0 + minHeight); };
 
-    for (int z = 0; z < chunkWidth; z++)
+    for (int z = 0; z < CHUNK_WIDTH; z++)
     {
-        for (int x = 0; x < chunkWidth; x++)
+        for (int x = 0; x < CHUNK_WIDTH; x++)
         {
-            heightmap[x + chunkWidth*z] = scale(m_Noise.GetNoise((float) (x + chunkPos.x), (float) (z + chunkPos.z)));
+            heightmap[x + z*CHUNK_WIDTH] = scale(m_Noise.GetNoise((float) (x + chunkPos.x), (float) (z + chunkPos.z)));
         }
     }
 

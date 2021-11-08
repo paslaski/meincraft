@@ -40,9 +40,9 @@ void ChunkMeshingSystem::constructMesh(entt::entity& chunk, entt::registry& regi
     // create new vertex data for mesh from scratch
     // position.pos refers to (i, j, k) = (0, 0, 0) in world coordinates
     // i, j, k refer to block position in chunk coordinates
-    for (int k = 0; k < CHUNK_SIZE; k++)
-        for (int j = 0; j < CHUNK_SIZE; j++)
-            for (int i = 0; i < CHUNK_SIZE; i++)
+    for (int k = 0; k < CHUNK_WIDTH; k++)
+        for (int j = 0; j < CHUNK_HEIGHT; j++)
+            for (int i = 0; i < CHUNK_WIDTH; i++)
                 for (int face = 0; face < 6; face++) // 6 faces for each cube
                     for (int v = 0; v < 6; v++)
                     { // 6 vertices for each face
@@ -99,8 +99,10 @@ void ChunkMeshingSystem::greedyMesh(entt::entity &chunk, entt::registry &registr
 
     vertices.clear(); // delete old vertex data
 
-    Direction bFaceDirs[3] = {EAST, UP, NORTH};
+    Direction bFaceDirs[3] = {EAST, UP, NORTH}; // x, y, z indexing to support dim, u, v indexing
     Direction fFaceDirs[3] = {WEST, DOWN, SOUTH};
+    // x, y, z indexing to support dim, u, v indexing: gives max index in chunk array
+    int chunkDimSize[3] = {CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_WIDTH};
 
     // ---------------------- GREEDY MESHING ALGORITHM ----------------------
 
@@ -120,25 +122,25 @@ void ChunkMeshingSystem::greedyMesh(entt::entity &chunk, entt::registry &registr
         int curVox[3];
 
         // tracks face type in UV plane that dim passes through
-        BlockType mask[CHUNK_SIZE*CHUNK_SIZE]; // must explicitly define each entry, AIR!=default
+        BlockType mask[chunkDimSize[u] * chunkDimSize[v]]; // must explicitly define each entry, AIR!=default
 
-        for (curVox[dim] = -1; curVox[dim] < CHUNK_SIZE; ) // depth=N has N+1 faces
+        for (curVox[dim] = -1; curVox[dim] < chunkDimSize[dim]; ) // depth=N has N+1 faces
         {
             // ---------------------- COMPUTE MASK ----------------------
-            for (curVox[v] = 0; curVox[v] < CHUNK_SIZE; curVox[v]++)
-                for (curVox[u] = 0; curVox[u] < CHUNK_SIZE; curVox[u]++)
+            for (curVox[v] = 0; curVox[v] < chunkDimSize[v]; curVox[v]++)
+                for (curVox[u] = 0; curVox[u] < chunkDimSize[u]; curVox[u]++)
                 {
                     // voxels behind + in front of face of interest
                     BlockType bFace = (curVox[dim] >= 0) ?
                             sideLookup(blocks.at(curVox[0], curVox[1], curVox[2]), bDir) : AIR;
-                    BlockType fFace = (curVox[dim] < CHUNK_SIZE - 1) ?
+                    BlockType fFace = (curVox[dim] < chunkDimSize[dim] - 1) ?
                             sideLookup(blocks.at(curVox[0] + dVec[0],
                                                  curVox[1] + dVec[1],
                                                  curVox[2] + dVec[2]), fDir)
-                                                 : AIR;
+                                                                      : AIR;
 
                     // only draw face if EXACTLY one side is AIR
-                    mask[curVox[u] + curVox[v]*CHUNK_SIZE] = ((bFace != AIR) != (fFace != AIR)) ? ((bFace != AIR) ? bFace : fFace) : AIR;
+                    mask[curVox[u] + curVox[v] * chunkDimSize[u]] = ((bFace != AIR) != (fFace != AIR)) ? ((bFace != AIR) ? bFace : fFace) : AIR;
                 }
 
             // starts at -1 for first face, which is truly at 0 relative to chunk --> inc reflects face position
@@ -146,11 +148,11 @@ void ChunkMeshingSystem::greedyMesh(entt::entity &chunk, entt::registry &registr
 
             // ---------------------- GENERATE MESH FOR MASK ----------------------
             // iterate across mask, grouping together equal adjacent faces
-            for (int j = 0; j < CHUNK_SIZE; j++)
+            for (int j = 0; j < chunkDimSize[v]; j++)
             {
-                for (int i = 0; i < CHUNK_SIZE;)
+                for (int i = 0; i < chunkDimSize[u];)
                 {
-                    BlockType curFace = mask[i + j*CHUNK_SIZE];
+                    BlockType curFace = mask[i + j * chunkDimSize[u]];
                     if (curFace == AIR) {
                         i++;
                         continue; // ignore blank faces
@@ -158,17 +160,17 @@ void ChunkMeshingSystem::greedyMesh(entt::entity &chunk, entt::registry &registr
 
                     // find maximum width of identically drawn faces
                     int width = 1; // absolute length
-                    while (i + width < CHUNK_SIZE && mask[i + width + j*CHUNK_SIZE] == curFace)
+                    while (i + width < chunkDimSize[u] && mask[i + width + j * chunkDimSize[u]] == curFace)
                     {
                         width++;
                     }
                     // find maximum height (given width) of identically drawn faces
                     int height = 1; // absolute length
-                    while (j + height < CHUNK_SIZE)
+                    while (j + height < chunkDimSize[v])
                     {
                         // move across width-direction, checking all blocks same as curFace
                         int wIncrement = 0;
-                        while (wIncrement < width && mask[i + wIncrement + (j+height)*CHUNK_SIZE] == curFace)
+                        while (wIncrement < width && mask[i + wIncrement + (j+height) * chunkDimSize[u]] == curFace)
                         { wIncrement++; }
                         if (wIncrement == width) // entire height column matches curFace, can append entire column
                             height++;
@@ -204,7 +206,7 @@ void ChunkMeshingSystem::greedyMesh(entt::entity &chunk, entt::registry &registr
                     // clear mask for subsequent passes (prevents drawing same face again)
                     for (int h = 0; h < height; h++)
                         for (int w = 0; w < width; w++)
-                            mask[i + w + (j + h)*CHUNK_SIZE] = AIR;
+                            mask[i + w + (j + h) * chunkDimSize[u]] = AIR;
 
                     i += width;
                 }

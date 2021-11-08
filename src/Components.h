@@ -22,10 +22,10 @@ struct BlockComponent
     bool hasChanged; // useful to determine if new meshes should be generated
 
     // include array of 8 bit enums corresponding to block types
-    std::vector<BlockType> blocks = std::vector<BlockType>(CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE, AIR);
+    std::vector<BlockType> blocks = std::vector<BlockType>(CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_WIDTH, AIR);
 
     BlockType at(int x, int y, int z) {
-        return blocks[x + (z * CHUNK_SIZE) + (y * CHUNK_SIZE*CHUNK_SIZE)];
+        return blocks[x + (z * CHUNK_WIDTH) + (y * CHUNK_WIDTH * CHUNK_WIDTH)];
     }
 };
 
