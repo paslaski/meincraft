@@ -7,8 +7,11 @@
 #include "Block.h"
 #include "Components.h"
 
-ChunkLoaderSystem::ChunkLoaderSystem()
-{}
+ChunkLoaderSystem::ChunkLoaderSystem(entt::registry& registry)
+    : chunkGenerator(5271998, registry)
+{
+
+}
 
 ChunkLoaderSystem::~ChunkLoaderSystem()
 {}

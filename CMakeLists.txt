@@ -32,7 +32,7 @@ link_libraries(${OPENGL} ${GLEW_LINK} ${GLFW_LINK})
 # Execute compilation command
 set(SOURCE_FILES src/main.cpp)
 # added glad to be compiled before main
-add_executable(meincraft src/main.cpp /Users/robpaslaski/Downloads/glad/src/glad.c src/main.cpp ext/stb_image.cpp src/Components.h src/World.cpp src/World.h src/RenderSystem.cpp src/RenderSystem.h src/InputSystem.cpp src/InputSystem.h src/Camera.h src/Chunk.h src/Block.h src/Shader.cpp src/Shader.h src/Texture.cpp src/Texture.h src/Debug.h src/Block.cpp src/ChunkMeshingSystem.cpp src/ChunkMeshingSystem.h src/ChunkLoaderSystem.cpp src/ChunkLoaderSystem.h)
+add_executable(meincraft src/main.cpp /Users/robpaslaski/Downloads/glad/src/glad.c src/main.cpp ext/stb_image.cpp src/Components.h src/World.cpp src/World.h src/RenderSystem.cpp src/RenderSystem.h src/InputSystem.cpp src/InputSystem.h src/Camera.h src/Chunk.h src/Block.h src/Shader.cpp src/Shader.h src/Texture.cpp src/Texture.h src/Debug.h src/Block.cpp src/ChunkMeshingSystem.cpp src/ChunkMeshingSystem.h src/ChunkLoaderSystem.cpp src/ChunkLoaderSystem.h src/ChunkGenerator.cpp src/ChunkGenerator.h)
 
 if (APPLE)
     target_link_libraries(meincraft "-framework OpenGL")
