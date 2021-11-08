@@ -10,7 +10,9 @@ World::World()
     inputSystem.assign_window_callbacks();
 //    chunkLoaderSystem.createChunk(registry);
 //    chunkLoaderSystem = ChunkLoaderSystem(registry);
-    chunkLoaderSystem.chunkGenerator.generateChunk(glm::vec3{0, 0, 0});
+    for (int x = 0; x <= 16*5; x+=16)
+        for (int z = 0; z <= 16*5; z+=16)
+            chunkLoaderSystem.chunkGenerator.generateChunk(glm::vec3{x, 0, z});
 }
 
 World::~World()

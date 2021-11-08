@@ -52,7 +52,7 @@ void RenderSystem::renderChunks(entt::registry& registry)
     GLCall(glBindVertexArray(blockVAO));
 
     // create transformations
-    glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 400.0f);
     glm::mat4 view = camera.GetViewMatrix();
 
     // pass transformation matrices to the shader
