@@ -39,7 +39,7 @@ void ChunkLoaderSystem::createChunk(entt::registry& registry)
             blocks[j * CHUNK_WIDTH + k * CHUNK_WIDTH * CHUNK_WIDTH] = LADDER;
 
     // bool hasChanged, std::vector<BlockType> blocks
-    registry.emplace<BlockComponent>(chunk, true, blocks);
+    registry.emplace<ChunkComponent>(chunk, true, blocks);
 
     // create mesh component & associated OpenGL buffer object (uncopyable)
     unsigned int chunkVBO;

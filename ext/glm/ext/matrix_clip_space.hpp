@@ -460,7 +460,7 @@ namespace glm
 	GLM_FUNC_DECL mat<4, 4, T, defaultp> perspectiveFov(
 		T fov, T width, T height, T near, T far);
 
-	/// Creates a matrix for a left handed, symmetric perspective-view frustum with far plane at infinite.
+	/// Creates a matrix for a left handed, symmetric perspective-view frustum with far plane blockAt infinite.
 	///
 	/// @param fovy Specifies the field of view angle, in degrees, in the y direction. Expressed in radians.
 	/// @param aspect Specifies the aspect ratio that determines the field of view in the x direction. The aspect ratio is the ratio of x (width) to y (height).
@@ -471,7 +471,7 @@ namespace glm
 	GLM_FUNC_DECL mat<4, 4, T, defaultp> infinitePerspectiveLH(
 		T fovy, T aspect, T near);
 
-	/// Creates a matrix for a right handed, symmetric perspective-view frustum with far plane at infinite.
+	/// Creates a matrix for a right handed, symmetric perspective-view frustum with far plane blockAt infinite.
 	///
 	/// @param fovy Specifies the field of view angle, in degrees, in the y direction. Expressed in radians.
 	/// @param aspect Specifies the aspect ratio that determines the field of view in the x direction. The aspect ratio is the ratio of x (width) to y (height).
@@ -482,7 +482,7 @@ namespace glm
 	GLM_FUNC_DECL mat<4, 4, T, defaultp> infinitePerspectiveRH(
 		T fovy, T aspect, T near);
 
-	/// Creates a matrix for a symmetric perspective-view frustum with far plane at infinite with default handedness.
+	/// Creates a matrix for a symmetric perspective-view frustum with far plane blockAt infinite with default handedness.
 	///
 	/// @param fovy Specifies the field of view angle, in degrees, in the y direction. Expressed in radians.
 	/// @param aspect Specifies the aspect ratio that determines the field of view in the x direction. The aspect ratio is the ratio of x (width) to y (height).
@@ -493,7 +493,7 @@ namespace glm
 	GLM_FUNC_DECL mat<4, 4, T, defaultp> infinitePerspective(
 		T fovy, T aspect, T near);
 
-	/// Creates a matrix for a symmetric perspective-view frustum with far plane at infinite for graphics hardware that doesn't support depth clamping.
+	/// Creates a matrix for a symmetric perspective-view frustum with far plane blockAt infinite for graphics hardware that doesn't support depth clamping.
 	///
 	/// @param fovy Specifies the field of view angle, in degrees, in the y direction. Expressed in radians.
 	/// @param aspect Specifies the aspect ratio that determines the field of view in the x direction. The aspect ratio is the ratio of x (width) to y (height).
@@ -504,7 +504,7 @@ namespace glm
 	GLM_FUNC_DECL mat<4, 4, T, defaultp> tweakedInfinitePerspective(
 		T fovy, T aspect, T near);
 
-	/// Creates a matrix for a symmetric perspective-view frustum with far plane at infinite for graphics hardware that doesn't support depth clamping.
+	/// Creates a matrix for a symmetric perspective-view frustum with far plane blockAt infinite for graphics hardware that doesn't support depth clamping.
 	///
 	/// @param fovy Specifies the field of view angle, in degrees, in the y direction. Expressed in radians.
 	/// @param aspect Specifies the aspect ratio that determines the field of view in the x direction. The aspect ratio is the ratio of x (width) to y (height).

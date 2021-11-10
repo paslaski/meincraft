@@ -95,10 +95,10 @@ namespace glm
 	GLM_FUNC_DECL mat<4, 4, T, Q> scale(
 		mat<4, 4, T, Q> const& m, vec<3, T, Q> const& v);
 
-	/// Build a right handed look at view matrix.
+	/// Build a right handed look blockAt view matrix.
 	///
 	/// @param eye Position of the camera
-	/// @param center Position where the camera is looking at
+	/// @param center Position where the camera is looking blockAt
 	/// @param up Normalized up vector, how the camera is oriented. Typically (0, 0, 1)
 	///
 	/// @tparam T A floating-point scalar type
@@ -109,10 +109,10 @@ namespace glm
 	GLM_FUNC_DECL mat<4, 4, T, Q> lookAtRH(
 		vec<3, T, Q> const& eye, vec<3, T, Q> const& center, vec<3, T, Q> const& up);
 
-	/// Build a left handed look at view matrix.
+	/// Build a left handed look blockAt view matrix.
 	///
 	/// @param eye Position of the camera
-	/// @param center Position where the camera is looking at
+	/// @param center Position where the camera is looking blockAt
 	/// @param up Normalized up vector, how the camera is oriented. Typically (0, 0, 1)
 	///
 	/// @tparam T A floating-point scalar type
@@ -123,10 +123,10 @@ namespace glm
 	GLM_FUNC_DECL mat<4, 4, T, Q> lookAtLH(
 		vec<3, T, Q> const& eye, vec<3, T, Q> const& center, vec<3, T, Q> const& up);
 
-	/// Build a look at view matrix based on the default handedness.
+	/// Build a look blockAt view matrix based on the default handedness.
 	///
 	/// @param eye Position of the camera
-	/// @param center Position where the camera is looking at
+	/// @param center Position where the camera is looking blockAt
 	/// @param up Normalized up vector, how the camera is oriented. Typically (0, 0, 1)
 	///
 	/// @tparam T A floating-point scalar type

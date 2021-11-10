@@ -5,6 +5,7 @@
 #include "Block.h"
 #include "Chunk.h"
 #include "Texture.h"
+#include "Biome.h"
 
 struct TagComponent
 {
@@ -17,14 +18,16 @@ struct PositionComponent
     glm::vec3 pos;
 };
 
-struct BlockComponent
+struct ChunkComponent
 {
     bool hasChanged; // useful to determine if new meshes should be generated
 
     // include array of 8 bit enums corresponding to block types
-    std::vector<BlockType> blocks = std::vector<BlockType>(CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_WIDTH, AIR);
+    std::vector<BlockType> blocks; // = std::vector<BlockType>(CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_WIDTH, AIR);
+    // classifies biome for each x,z index
+    std::vector<BiomeType> biomeMap; // = std::vector<BiomeType>(CHUNK_WIDTH * CHUNK_WIDTH, GrassBiome);
 
-    BlockType at(int x, int y, int z) {
+    BlockType blockAt(int x, int y, int z) {
         return blocks[x + (z * CHUNK_WIDTH) + (y * CHUNK_WIDTH * CHUNK_WIDTH)];
     }
 };

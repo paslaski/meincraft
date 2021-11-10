@@ -287,7 +287,7 @@ public:
 
 
     /// <summary>
-    /// 2D noise at given position using current settings
+    /// 2D noise blockAt given position using current settings
     /// </summary>
     /// <returns>
     /// Noise output bounded between -1...1
@@ -313,7 +313,7 @@ public:
     }
 
     /// <summary>
-    /// 3D noise at given position using current settings
+    /// 3D noise blockAt given position using current settings
     /// </summary>
     /// <returns>
     /// Noise output bounded between -1...1

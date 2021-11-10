@@ -688,7 +688,7 @@ struct fnv1a_traits<std::uint64_t> {
  *
  * A hashed string is a compile-time tool that allows users to use
  * human-readable identifers in the codebase while using their numeric
- * counterparts at runtime.<br/>
+ * counterparts blockAt runtime.<br/>
  * Because of that, a hashed string can also be used in constant expressions if
  * required.
  *
@@ -1274,7 +1274,7 @@ using integral_constant = std::integral_constant<decltype(Value), Value>;
 
 /**
  * @brief Alias template to facilitate the creation of named values.
- * @tparam Value A constant value at least convertible to `id_type`.
+ * @tparam Value A constant value blockAt least convertible to `id_type`.
  */
 template<id_type Value>
 using tag = integral_constant<Value>;
@@ -2345,7 +2345,7 @@ namespace entt {
  * @brief Dynamic identifier generator.
  *
  * Utility class template that can be used to assign unique identifiers to types
- * at runtime. Use different specializations to create separate sets of
+ * blockAt runtime. Use different specializations to create separate sets of
  * identifiers.
  */
 template<typename...>
@@ -2358,7 +2358,7 @@ public:
 
     /*! @brief Statically generated unique identifier for the given type. */
     template<typename... Type>
-    // at the time I'm writing, clang crashes during compilation if auto is used instead of family_type
+    // blockAt the time I'm writing, clang crashes during compilation if auto is used instead of family_type
     inline static const family_type type = identifier++;
 };
 
@@ -2427,7 +2427,7 @@ struct fnv1a_traits<std::uint64_t> {
  *
  * A hashed string is a compile-time tool that allows users to use
  * human-readable identifers in the codebase while using their numeric
- * counterparts at runtime.<br/>
+ * counterparts blockAt runtime.<br/>
  * Because of that, a hashed string can also be used in constant expressions if
  * required.
  *
@@ -2663,7 +2663,7 @@ namespace entt {
 /**
  * @brief Types identifiers.
  *
- * Variable template used to generate identifiers at compile-time for the given
+ * Variable template used to generate identifiers blockAt compile-time for the given
  * types. Use the `get` member function to know what's the identifier associated
  * to the specific type.
  *
@@ -3161,7 +3161,7 @@ using integral_constant = std::integral_constant<decltype(Value), Value>;
 
 /**
  * @brief Alias template to facilitate the creation of named values.
- * @tparam Value A constant value at least convertible to `id_type`.
+ * @tparam Value A constant value blockAt least convertible to `id_type`.
  */
 template<id_type Value>
 using tag = integral_constant<Value>;
@@ -4563,7 +4563,7 @@ using integral_constant = std::integral_constant<decltype(Value), Value>;
 
 /**
  * @brief Alias template to facilitate the creation of named values.
- * @tparam Value A constant value at least convertible to `id_type`.
+ * @tparam Value A constant value blockAt least convertible to `id_type`.
  */
 template<id_type Value>
 using tag = integral_constant<Value>;
@@ -6467,18 +6467,18 @@ public:
     }
 
     /**
-     * @brief Returns the entity at specified location, with bounds checking.
+     * @brief Returns the entity blockAt specified location, with bounds checking.
      * @param pos The position for which to return the entity.
-     * @return The entity at specified location if any, a null entity otherwise.
+     * @return The entity blockAt specified location if any, a null entity otherwise.
      */
     [[nodiscard]] entity_type at(const size_type pos) const ENTT_NOEXCEPT {
         return pos < count ? packed[pos] : null;
     }
 
     /**
-     * @brief Returns the entity at specified location, without bounds checking.
+     * @brief Returns the entity blockAt specified location, without bounds checking.
      * @param pos The position for which to return the entity.
-     * @return The entity at specified location.
+     * @return The entity blockAt specified location.
      */
     [[nodiscard]] entity_type operator[](const size_type pos) const ENTT_NOEXCEPT {
         ENTT_ASSERT(pos < count, "Position is out of bounds");
@@ -7158,7 +7158,7 @@ using integral_constant = std::integral_constant<decltype(Value), Value>;
 
 /**
  * @brief Alias template to facilitate the creation of named values.
- * @tparam Value A constant value at least convertible to `id_type`.
+ * @tparam Value A constant value blockAt least convertible to `id_type`.
  */
 template<id_type Value>
 using tag = integral_constant<Value>;
@@ -8199,7 +8199,7 @@ public:
     }
 
     /**
-     * @brief Returns false if at least a listener is connected to the signal.
+     * @brief Returns false if blockAt least a listener is connected to the signal.
      * @return True if the signal has no listeners connected, false otherwise.
      */
     [[nodiscard]] bool empty() const ENTT_NOEXCEPT {
@@ -8408,7 +8408,7 @@ public:
     {}
 
     /**
-     * @brief Returns false if at least a listener is connected to the sink.
+     * @brief Returns false if blockAt least a listener is connected to the sink.
      * @return True if the sink has no listeners connected, false otherwise.
      */
     [[nodiscard]] bool empty() const ENTT_NOEXCEPT {
@@ -9773,7 +9773,7 @@ class basic_group;
 /**
  * @brief Non-owning group.
  *
- * A non-owning group returns all entities and only the entities that have at
+ * A non-owning group returns all entities and only the entities that have blockAt
  * least the given components. Moreover, it's guaranteed that the entity list
  * is tightly packed in memory for fast iterations.
  *
@@ -10228,7 +10228,7 @@ private:
 /**
  * @brief Owning group.
  *
- * Owning groups return all entities and only the entities that have at least
+ * Owning groups return all entities and only the entities that have blockAt least
  * the given components. Moreover:
  *
  * * It's guaranteed that the entity list is tightly packed in memory for fast
@@ -11053,7 +11053,7 @@ struct fnv1a_traits<std::uint64_t> {
  *
  * A hashed string is a compile-time tool that allows users to use
  * human-readable identifers in the codebase while using their numeric
- * counterparts at runtime.<br/>
+ * counterparts blockAt runtime.<br/>
  * Because of that, a hashed string can also be used in constant expressions if
  * required.
  *
@@ -11639,7 +11639,7 @@ using integral_constant = std::integral_constant<decltype(Value), Value>;
 
 /**
  * @brief Alias template to facilitate the creation of named values.
- * @tparam Value A constant value at least convertible to `id_type`.
+ * @tparam Value A constant value blockAt least convertible to `id_type`.
  */
 template<id_type Value>
 using tag = integral_constant<Value>;
@@ -12973,7 +12973,7 @@ class basic_group;
 /**
  * @brief Non-owning group.
  *
- * A non-owning group returns all entities and only the entities that have at
+ * A non-owning group returns all entities and only the entities that have blockAt
  * least the given components. Moreover, it's guaranteed that the entity list
  * is tightly packed in memory for fast iterations.
  *
@@ -13428,7 +13428,7 @@ private:
 /**
  * @brief Owning group.
  *
- * Owning groups return all entities and only the entities that have at least
+ * Owning groups return all entities and only the entities that have blockAt least
  * the given components. Moreover:
  *
  * * It's guaranteed that the entity list is tightly packed in memory for fast
@@ -14443,7 +14443,7 @@ struct fnv1a_traits<std::uint64_t> {
  *
  * A hashed string is a compile-time tool that allows users to use
  * human-readable identifers in the codebase while using their numeric
- * counterparts at runtime.<br/>
+ * counterparts blockAt runtime.<br/>
  * Because of that, a hashed string can also be used in constant expressions if
  * required.
  *
@@ -15029,7 +15029,7 @@ using integral_constant = std::integral_constant<decltype(Value), Value>;
 
 /**
  * @brief Alias template to facilitate the creation of named values.
- * @tparam Value A constant value at least convertible to `id_type`.
+ * @tparam Value A constant value blockAt least convertible to `id_type`.
  */
 template<id_type Value>
 using tag = integral_constant<Value>;
@@ -16432,7 +16432,7 @@ using integral_constant = std::integral_constant<decltype(Value), Value>;
 
 /**
  * @brief Alias template to facilitate the creation of named values.
- * @tparam Value A constant value at least convertible to `id_type`.
+ * @tparam Value A constant value blockAt least convertible to `id_type`.
  */
 template<id_type Value>
 using tag = integral_constant<Value>;
@@ -17442,8 +17442,8 @@ namespace entt {
 /**
  * @brief Runtime view.
  *
- * Runtime views iterate over those entities that have at least all the given
- * components in their bags. During initialization, a runtime view looks at the
+ * Runtime views iterate over those entities that have blockAt least all the given
+ * components in their bags. During initialization, a runtime view looks blockAt the
  * number of entities available for each component and picks up a reference to
  * the smallest set of candidate entities in order to get a performance boost
  * when iterate.<br/>
@@ -17807,7 +17807,7 @@ private:
  */
 
 
-/*! @brief Stable storage policy, aimed at pointer stability. */
+/*! @brief Stable storage policy, aimed blockAt pointer stability. */
 struct stable_storage_policy {
     /**
     * @cond TURN_OFF_DOXYGEN
@@ -17824,7 +17824,7 @@ struct stable_storage_policy {
 };
 
 
-/*! @brief Packed storage policy, aimed at faster linear iteration. */
+/*! @brief Packed storage policy, aimed blockAt faster linear iteration. */
 struct packed_storage_policy {
     /**
     * @cond TURN_OFF_DOXYGEN
@@ -17859,9 +17859,9 @@ struct basic_view;
 /**
  * @brief Multi component view.
  *
- * Multi component views iterate over those entities that have at least all the
+ * Multi component views iterate over those entities that have blockAt least all the
  * given components in their bags. During initialization, a multi component view
- * looks at the number of entities available for each component and uses the
+ * looks blockAt the number of entities available for each component and uses the
  * smallest set in order to get a performance boost when iterate.
  *
  * @b Important
@@ -19197,7 +19197,7 @@ public:
     /**
      * @brief Releases an entity identifier.
      *
-     * The version is updated and the identifier can be recycled at any time.
+     * The version is updated and the identifier can be recycled blockAt any time.
      *
      * @warning
      * Attempting to use an invalid entity results in undefined behavior.
@@ -19245,7 +19245,7 @@ public:
     /**
      * @brief Destroys an entity and releases its identifier.
      *
-     * The version is updated and the identifier can be recycled at any time.
+     * The version is updated and the identifier can be recycled blockAt any time.
      *
      * @warning
      * Adding or removing components to an entity that is being destroyed can
@@ -19593,14 +19593,14 @@ public:
     }
 
     /**
-     * @brief Checks if an entity has at least one of the given components.
+     * @brief Checks if an entity has blockAt least one of the given components.
      *
      * @warning
      * Attempting to use an invalid entity results in undefined behavior.
      *
      * @tparam Component Components for which to perform the check.
      * @param entity A valid entity identifier.
-     * @return True if the entity has at least one of the given components,
+     * @return True if the entity has blockAt least one of the given components,
      * false otherwise.
      */
     template<typename... Component>
@@ -19883,7 +19883,7 @@ public:
      *
      * * Single component views are incredibly fast and iterate a packed array
      *   of entities, all of which has the given component.
-     * * Multi component views look at the number of entities available for each
+     * * Multi component views look blockAt the number of entities available for each
      *   component and pick up a reference to the smallest set of candidates to
      *   test for the given components.
      *
@@ -19924,7 +19924,7 @@ public:
      * As a rule of thumb, storing a view should never be an option.
      *
      * Runtime views are to be used when users want to construct a view from
-     * some external inputs and don't know at compile-time what are the required
+     * some external inputs and don't know blockAt compile-time what are the required
      * components.
      *
      * @tparam ItComp Type of input iterator for the components to use to
@@ -20658,10 +20658,10 @@ struct basic_handle {
     }
 
     /**
-     * @brief Checks if a handle has at least one of the given components.
+     * @brief Checks if a handle has blockAt least one of the given components.
      * @sa basic_registry::any_of
      * @tparam Component Components for which to perform the check.
-     * @return True if the handle has at least one of the given components,
+     * @return True if the handle has blockAt least one of the given components,
      * false otherwise.
      */
     template<typename... Component>
@@ -21447,17 +21447,17 @@ inline constexpr basic_collector<> collector{};
  * @brief Observer.
  *
  * An observer returns all the entities and only the entities that fit the
- * requirements of at least one matcher. Moreover, it's guaranteed that the
+ * requirements of blockAt least one matcher. Moreover, it's guaranteed that the
  * entity list is tightly packed in memory for fast iterations.<br/>
  * In general, observers don't stay true to the order of any set of components.
  *
  * Observers work mainly with two types of matchers, provided through a
  * collector:
  *
- * * Observing matcher: an observer will return at least all the living entities
+ * * Observing matcher: an observer will return blockAt least all the living entities
  *   for which one or more of the given components have been updated and not yet
  *   destroyed.
- * * Grouping matcher: an observer will return at least all the living entities
+ * * Grouping matcher: an observer will return blockAt least all the living entities
  *   that would have entered the given group if it existed and that would have
  *   not yet left it.
  *
@@ -23027,7 +23027,7 @@ public:
     /**
      * @brief Releases an entity identifier.
      *
-     * The version is updated and the identifier can be recycled at any time.
+     * The version is updated and the identifier can be recycled blockAt any time.
      *
      * @warning
      * Attempting to use an invalid entity results in undefined behavior.
@@ -23075,7 +23075,7 @@ public:
     /**
      * @brief Destroys an entity and releases its identifier.
      *
-     * The version is updated and the identifier can be recycled at any time.
+     * The version is updated and the identifier can be recycled blockAt any time.
      *
      * @warning
      * Adding or removing components to an entity that is being destroyed can
@@ -23423,14 +23423,14 @@ public:
     }
 
     /**
-     * @brief Checks if an entity has at least one of the given components.
+     * @brief Checks if an entity has blockAt least one of the given components.
      *
      * @warning
      * Attempting to use an invalid entity results in undefined behavior.
      *
      * @tparam Component Components for which to perform the check.
      * @param entity A valid entity identifier.
-     * @return True if the entity has at least one of the given components,
+     * @return True if the entity has blockAt least one of the given components,
      * false otherwise.
      */
     template<typename... Component>
@@ -23713,7 +23713,7 @@ public:
      *
      * * Single component views are incredibly fast and iterate a packed array
      *   of entities, all of which has the given component.
-     * * Multi component views look at the number of entities available for each
+     * * Multi component views look blockAt the number of entities available for each
      *   component and pick up a reference to the smallest set of candidates to
      *   test for the given components.
      *
@@ -23754,7 +23754,7 @@ public:
      * As a rule of thumb, storing a view should never be an option.
      *
      * Runtime views are to be used when users want to construct a view from
-     * some external inputs and don't know at compile-time what are the required
+     * some external inputs and don't know blockAt compile-time what are the required
      * components.
      *
      * @tparam ItComp Type of input iterator for the components to use to
@@ -24281,8 +24281,8 @@ namespace entt {
 /**
  * @brief Runtime view.
  *
- * Runtime views iterate over those entities that have at least all the given
- * components in their bags. During initialization, a runtime view looks at the
+ * Runtime views iterate over those entities that have blockAt least all the given
+ * components in their bags. During initialization, a runtime view looks blockAt the
  * number of entities available for each component and picks up a reference to
  * the smallest set of candidate entities in order to get a performance boost
  * when iterate.<br/>
@@ -24670,7 +24670,7 @@ private:
  * @brief Utility class to restore a snapshot as a whole.
  *
  * A snapshot loader requires that the destination registry be empty and loads
- * all the data at once while keeping intact the identifiers that the entities
+ * all the data blockAt once while keeping intact the identifiers that the entities
  * originally had.<br/>
  * An example of use is the implementation of a save/restore utility.
  *
@@ -24804,7 +24804,7 @@ private:
  * A _continuous loader_ is designed to load data from a source registry to a
  * (possibly) non-empty destination. The loader can accommodate in a registry
  * more than one snapshot in a sort of _continuous loading_ that updates the
- * destination one step at a time.<br/>
+ * destination one step blockAt a time.<br/>
  * Identifiers that entities originally had are not transferred to the target.
  * Instead, the loader maps remote identifiers to local ones while restoring a
  * snapshot.<br/>
@@ -25630,18 +25630,18 @@ public:
     }
 
     /**
-     * @brief Returns the entity at specified location, with bounds checking.
+     * @brief Returns the entity blockAt specified location, with bounds checking.
      * @param pos The position for which to return the entity.
-     * @return The entity at specified location if any, a null entity otherwise.
+     * @return The entity blockAt specified location if any, a null entity otherwise.
      */
     [[nodiscard]] entity_type at(const size_type pos) const ENTT_NOEXCEPT {
         return pos < count ? packed[pos] : null;
     }
 
     /**
-     * @brief Returns the entity at specified location, without bounds checking.
+     * @brief Returns the entity blockAt specified location, without bounds checking.
      * @param pos The position for which to return the entity.
-     * @return The entity at specified location.
+     * @return The entity blockAt specified location.
      */
     [[nodiscard]] entity_type operator[](const size_type pos) const ENTT_NOEXCEPT {
         ENTT_ASSERT(pos < count, "Position is out of bounds");
@@ -27201,7 +27201,7 @@ private:
  */
 
 
-/*! @brief Stable storage policy, aimed at pointer stability. */
+/*! @brief Stable storage policy, aimed blockAt pointer stability. */
 struct stable_storage_policy {
     /**
     * @cond TURN_OFF_DOXYGEN
@@ -27218,7 +27218,7 @@ struct stable_storage_policy {
 };
 
 
-/*! @brief Packed storage policy, aimed at faster linear iteration. */
+/*! @brief Packed storage policy, aimed blockAt faster linear iteration. */
 struct packed_storage_policy {
     /**
     * @cond TURN_OFF_DOXYGEN
@@ -27253,9 +27253,9 @@ struct basic_view;
 /**
  * @brief Multi component view.
  *
- * Multi component views iterate over those entities that have at least all the
+ * Multi component views iterate over those entities that have blockAt least all the
  * given components in their bags. During initialization, a multi component view
- * looks at the number of entities available for each component and uses the
+ * looks blockAt the number of entities available for each component and uses the
  * smallest set in order to get a performance boost when iterate.
  *
  * @b Important
@@ -28706,7 +28706,7 @@ using integral_constant = std::integral_constant<decltype(Value), Value>;
 
 /**
  * @brief Alias template to facilitate the creation of named values.
- * @tparam Value A constant value at least convertible to `id_type`.
+ * @tparam Value A constant value blockAt least convertible to `id_type`.
  */
 template<id_type Value>
 using tag = integral_constant<Value>;
@@ -29508,7 +29508,7 @@ struct basic_dynamic_associative_container {
 template<typename Container>
 struct basic_sequence_container {
     /**
-     * @brief Returns a reference to the element at the specified location of
+     * @brief Returns a reference to the element blockAt the specified location of
      * the given container (no bounds checking is performed).
      * @param cont The container from which to get the element.
      * @param pos The position of the element to return.
@@ -29580,7 +29580,7 @@ struct dynamic_sequence_container {
     }
 
     /**
-     * @brief Inserts an element at the specified location of the given
+     * @brief Inserts an element blockAt the specified location of the given
      * container.
      * @param cont The container into which to insert the element.
      * @param it Iterator before which the element will be inserted.
@@ -29593,7 +29593,7 @@ struct dynamic_sequence_container {
     }
 
     /**
-     * @brief Removes the element at the specified location from the given
+     * @brief Removes the element blockAt the specified location from the given
      * container.
      * @param cont The container from which to remove the element.
      * @param it Iterator to the element to remove.
@@ -30012,7 +30012,7 @@ struct fnv1a_traits<std::uint64_t> {
  *
  * A hashed string is a compile-time tool that allows users to use
  * human-readable identifers in the codebase while using their numeric
- * counterparts at runtime.<br/>
+ * counterparts blockAt runtime.<br/>
  * Because of that, a hashed string can also be used in constant expressions if
  * required.
  *
@@ -31087,7 +31087,7 @@ using integral_constant = std::integral_constant<decltype(Value), Value>;
 
 /**
  * @brief Alias template to facilitate the creation of named values.
- * @tparam Value A constant value at least convertible to `id_type`.
+ * @tparam Value A constant value blockAt least convertible to `id_type`.
  */
 template<id_type Value>
 using tag = integral_constant<Value>;
@@ -34593,7 +34593,7 @@ inline bool meta_sequence_container::clear() {
 
 
 /**
- * @brief Inserts an element at a specified location of a container.
+ * @brief Inserts an element blockAt a specified location of a container.
  * @param it Iterator before which the element will be inserted.
  * @param value Element value to insert.
  * @return A pair consisting of an iterator to the inserted element (in case of
@@ -34616,7 +34616,7 @@ inline std::pair<meta_sequence_container::iterator, bool> meta_sequence_containe
 
 
 /**
- * @brief Returns a reference to the element at a given location of a container
+ * @brief Returns a reference to the element blockAt a given location of a container
  * (no bounds checking is performed).
  * @param pos The position of the element to return.
  * @return A reference to the requested element properly wrapped.
@@ -35337,7 +35337,7 @@ template<typename Id, typename Node>
  * The meta factory is an utility class used to reflect types, data members and
  * functions of all sorts. This class ensures that the underlying web of types
  * is built correctly and performs some checks in debug mode to ensure that
- * there are no subtle errors at runtime.
+ * there are no subtle errors blockAt runtime.
  */
 template<typename...>
 struct meta_factory;
@@ -35415,7 +35415,7 @@ public:
     /**
      * @brief Assigns a property to the last meta object created.
      *
-     * Both the key and the value (if any) must be at least copy constructible.
+     * Both the key and the value (if any) must be blockAt least copy constructible.
      *
      * @tparam PropertyOrKey Type of the property or property key.
      * @tparam Value Optional type of the property value.
@@ -35437,7 +35437,7 @@ public:
     /**
      * @brief Assigns properties to the last meta object created.
      *
-     * Both the keys and the values (if any) must be at least copy
+     * Both the keys and the values (if any) must be blockAt least copy
      * constructible.
      *
      * @tparam Property Types of the properties.
@@ -35517,7 +35517,7 @@ struct meta_factory<Type> {
      * functions.<br/>
      * In case of free functions, they must accept a const reference to an
      * instance of the parent type as an argument. In case of member functions,
-     * they should have no arguments at all.
+     * they should have no arguments blockAt all.
      *
      * @tparam Candidate The actual function to use for the conversion.
      * @return A meta factory for the parent type.
@@ -35757,7 +35757,7 @@ struct meta_factory<Type> {
      * an instance of the parent type as their first argument. A setter has then
      * an extra argument of a type convertible to that of the parameter to
      * set.<br/>
-     * In case of member functions, getters have no arguments at all, while
+     * In case of member functions, getters have no arguments blockAt all, while
      * setters has an argument of a type convertible to that of the parameter to
      * set.
      *
@@ -37784,7 +37784,7 @@ inline bool meta_sequence_container::clear() {
 
 
 /**
- * @brief Inserts an element at a specified location of a container.
+ * @brief Inserts an element blockAt a specified location of a container.
  * @param it Iterator before which the element will be inserted.
  * @param value Element value to insert.
  * @return A pair consisting of an iterator to the inserted element (in case of
@@ -37807,7 +37807,7 @@ inline std::pair<meta_sequence_container::iterator, bool> meta_sequence_containe
 
 
 /**
- * @brief Returns a reference to the element at a given location of a container
+ * @brief Returns a reference to the element blockAt a given location of a container
  * (no bounds checking is performed).
  * @param pos The position of the element to return.
  * @return A reference to the requested element properly wrapped.
@@ -39738,7 +39738,7 @@ struct fnv1a_traits<std::uint64_t> {
  *
  * A hashed string is a compile-time tool that allows users to use
  * human-readable identifers in the codebase while using their numeric
- * counterparts at runtime.<br/>
+ * counterparts blockAt runtime.<br/>
  * Because of that, a hashed string can also be used in constant expressions if
  * required.
  *
@@ -40324,7 +40324,7 @@ using integral_constant = std::integral_constant<decltype(Value), Value>;
 
 /**
  * @brief Alias template to facilitate the creation of named values.
- * @tparam Value A constant value at least convertible to `id_type`.
+ * @tparam Value A constant value blockAt least convertible to `id_type`.
  */
 template<id_type Value>
 using tag = integral_constant<Value>;
@@ -41727,7 +41727,7 @@ using integral_constant = std::integral_constant<decltype(Value), Value>;
 
 /**
  * @brief Alias template to facilitate the creation of named values.
- * @tparam Value A constant value at least convertible to `id_type`.
+ * @tparam Value A constant value blockAt least convertible to `id_type`.
  */
 template<id_type Value>
 using tag = integral_constant<Value>;
@@ -42771,7 +42771,7 @@ namespace entt {
  *
  *   It's invoked once per tick until a process is explicitly aborted or it
  *   terminates either with or without errors. Even though it's not mandatory to
- *   declare this member function, as a rule of thumb each process should at
+ *   declare this member function, as a rule of thumb each process should blockAt
  *   least define it to work properly. The `void *` parameter is an opaque
  *   pointer to user data (if any) forwarded directly to the process during an
  *   update.
@@ -43120,7 +43120,7 @@ namespace entt {
  *
  *   It's invoked once per tick until a process is explicitly aborted or it
  *   terminates either with or without errors. Even though it's not mandatory to
- *   declare this member function, as a rule of thumb each process should at
+ *   declare this member function, as a rule of thumb each process should blockAt
  *   least define it to work properly. The `void *` parameter is an opaque
  *   pointer to user data (if any) forwarded directly to the process during an
  *   update.
@@ -43549,7 +43549,7 @@ public:
     }
 
     /**
-     * @brief Returns true if at least a process is currently scheduled.
+     * @brief Returns true if blockAt least a process is currently scheduled.
      * @return True if there are scheduled processes, false otherwise.
      */
     [[nodiscard]] bool empty() const ENTT_NOEXCEPT {
@@ -44112,7 +44112,7 @@ public:
      * The behavior is undefined if the handle doesn't contain a resource.
      *
      * @return A pointer to the managed resource or `nullptr` if the handle
-     * contains no resource at all.
+     * contains no resource blockAt all.
      */
     [[nodiscard]] const Resource * operator->() const ENTT_NOEXCEPT {
         return resource.get();
@@ -44264,7 +44264,7 @@ struct resource_cache {
      * @brief Clears a cache and discards all its resources.
      *
      * Handles are not invalidated and the memory used by a resource isn't
-     * freed as long as at least a handle keeps the resource itself alive.
+     * freed as long as blockAt least a handle keeps the resource itself alive.
      */
     void clear() ENTT_NOEXCEPT {
         resources.clear();
@@ -44384,7 +44384,7 @@ struct resource_cache {
      * @brief Discards the resource that corresponds to a given identifier.
      *
      * Handles are not invalidated and the memory used by the resource isn't
-     * freed as long as at least a handle keeps the resource itself alive.
+     * freed as long as blockAt least a handle keeps the resource itself alive.
      *
      * @param id Unique resource identifier.
      */
@@ -44603,7 +44603,7 @@ public:
      * The behavior is undefined if the handle doesn't contain a resource.
      *
      * @return A pointer to the managed resource or `nullptr` if the handle
-     * contains no resource at all.
+     * contains no resource blockAt all.
      */
     [[nodiscard]] const Resource * operator->() const ENTT_NOEXCEPT {
         return resource.get();
@@ -44944,7 +44944,7 @@ using integral_constant = std::integral_constant<decltype(Value), Value>;
 
 /**
  * @brief Alias template to facilitate the creation of named values.
- * @tparam Value A constant value at least convertible to `id_type`.
+ * @tparam Value A constant value blockAt least convertible to `id_type`.
  */
 template<id_type Value>
 using tag = integral_constant<Value>;
@@ -46106,7 +46106,7 @@ struct fnv1a_traits<std::uint64_t> {
  *
  * A hashed string is a compile-time tool that allows users to use
  * human-readable identifers in the codebase while using their numeric
- * counterparts at runtime.<br/>
+ * counterparts blockAt runtime.<br/>
  * Because of that, a hashed string can also be used in constant expressions if
  * required.
  *
@@ -47064,7 +47064,7 @@ public:
     }
 
     /**
-     * @brief Returns false if at least a listener is connected to the signal.
+     * @brief Returns false if blockAt least a listener is connected to the signal.
      * @return True if the signal has no listeners connected, false otherwise.
      */
     [[nodiscard]] bool empty() const ENTT_NOEXCEPT {
@@ -47273,7 +47273,7 @@ public:
     {}
 
     /**
-     * @brief Returns false if at least a listener is connected to the sink.
+     * @brief Returns false if blockAt least a listener is connected to the sink.
      * @return True if the sink has no listeners connected, false otherwise.
      */
     [[nodiscard]] bool empty() const ENTT_NOEXCEPT {
@@ -47732,7 +47732,7 @@ public:
      *
      * This method is blocking and it doesn't return until all the events are
      * delivered to the registered listeners. It's responsibility of the users
-     * to reduce at a minimum the time spent in the bodies of the listeners.
+     * to reduce blockAt a minimum the time spent in the bodies of the listeners.
      *
      * @tparam Event Type of events to send.
      */
@@ -47746,7 +47746,7 @@ public:
      *
      * This method is blocking and it doesn't return until all the events are
      * delivered to the registered listeners. It's responsibility of the users
-     * to reduce at a minimum the time spent in the bodies of the listeners.
+     * to reduce blockAt a minimum the time spent in the bodies of the listeners.
      */
     void update() const {
         for(auto pos = pools.size(); pos; --pos) {
@@ -48186,7 +48186,7 @@ public:
     }
 
     /**
-     * @brief Returns false if at least a listener is connected to the signal.
+     * @brief Returns false if blockAt least a listener is connected to the signal.
      * @return True if the signal has no listeners connected, false otherwise.
      */
     [[nodiscard]] bool empty() const ENTT_NOEXCEPT {
@@ -48395,7 +48395,7 @@ public:
     {}
 
     /**
-     * @brief Returns false if at least a listener is connected to the sink.
+     * @brief Returns false if blockAt least a listener is connected to the sink.
      * @return True if the sink has no listeners connected, false otherwise.
      */
     [[nodiscard]] bool empty() const ENTT_NOEXCEPT {

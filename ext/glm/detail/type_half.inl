@@ -186,7 +186,7 @@ namespace detail
 				// the sign bit and the 10 leftmost bits of the
 				// significand of f, with one exception: If the 10
 				// leftmost bits are all zero, the NAN would turn
-				// into an infinity, so we have to set at least one
+				// into an infinity, so we have to set blockAt least one
 				// bit in the significand.
 				//
 

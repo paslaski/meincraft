@@ -12,11 +12,11 @@ ChunkMeshingSystem::~ChunkMeshingSystem()
 void ChunkMeshingSystem::update(entt::registry& registry)
 {
     // view all chunks (data stored in BlockComponents)
-    auto chunkView = registry.view<BlockComponent>();
+    auto chunkView = registry.view<ChunkComponent>();
     for (auto chunk : chunkView)
     {
         // only have to update mesh if blocks have changed
-        if (registry.get<BlockComponent>(chunk).hasChanged)
+        if (registry.get<ChunkComponent>(chunk).hasChanged)
             greedyMesh(chunk, registry);
     }
 }
@@ -25,7 +25,7 @@ void ChunkMeshingSystem::constructMesh(entt::entity& chunk, entt::registry& regi
 {
 //    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     // retrieve refs to block data & vertex storage
-    BlockComponent& blocks = registry.get<BlockComponent>(chunk);
+    ChunkComponent& blocks = registry.get<ChunkComponent>(chunk);
     std::vector<texArrayVertex>& vertices = registry.get<MeshComponent>(chunk).chunkVertices;
     glm::vec3& pos = registry.get<PositionComponent>(chunk).pos;
 
@@ -46,7 +46,7 @@ void ChunkMeshingSystem::constructMesh(entt::entity& chunk, entt::registry& regi
                 for (int face = 0; face < 6; face++) // 6 faces for each cube
                     for (int v = 0; v < 6; v++)
                     { // 6 vertices for each face
-                        if (blocks.at(i, j, k) == AIR)
+                        if (blocks.blockAt(i, j, k) == AIR)
                             continue;
                         int dim = face % 3;
                         // follows UV coordinates of texture across 2D face surface
@@ -78,13 +78,13 @@ void ChunkMeshingSystem::constructMesh(entt::entity& chunk, entt::registry& regi
                                 static_cast<GLfloat>(pos.y + j + yVertOffset + yFaceOffset),
                                 static_cast<GLfloat>(pos.z + k + zVertOffset + zFaceOffset),
                                 uvCoords[v*2], uvCoords[v*2 + 1],
-                                static_cast<GLfloat>(sideLookup(blocks.at(i, j, k), dir[face]))
+                                static_cast<GLfloat>(sideLookup(blocks.blockAt(i, j, k), dir[face]))
                         );
                     }
 
     // note that new mesh was constructed based on changes
     // pretty sure this is an lvalue so this works
-    registry.get<BlockComponent>(chunk).hasChanged = false;
+    registry.get<ChunkComponent>(chunk).hasChanged = false;
     registry.get<MeshComponent>(chunk).mustUpdateBuffer = true;
 }
 
@@ -93,7 +93,7 @@ void ChunkMeshingSystem::greedyMesh(entt::entity &chunk, entt::registry &registr
     // // wireframes for debugging
 //     glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     // retrieve refs to block data & vertex storage
-    BlockComponent& blocks = registry.get<BlockComponent>(chunk);
+    ChunkComponent& blocks = registry.get<ChunkComponent>(chunk);
     std::vector<texArrayVertex>& vertices = registry.get<MeshComponent>(chunk).chunkVertices;
     glm::vec3& pos = registry.get<PositionComponent>(chunk).pos;
 
@@ -132,18 +132,18 @@ void ChunkMeshingSystem::greedyMesh(entt::entity &chunk, entt::registry &registr
                 {
                     // voxels behind + in front of face of interest
                     BlockType bFace = (curVox[dim] >= 0) ?
-                            sideLookup(blocks.at(curVox[0], curVox[1], curVox[2]), bDir) : AIR;
+                                      sideLookup(blocks.blockAt(curVox[0], curVox[1], curVox[2]), bDir) : AIR;
                     BlockType fFace = (curVox[dim] < chunkDimSize[dim] - 1) ?
-                            sideLookup(blocks.at(curVox[0] + dVec[0],
-                                                 curVox[1] + dVec[1],
-                                                 curVox[2] + dVec[2]), fDir)
+                            sideLookup(blocks.blockAt(curVox[0] + dVec[0],
+                                                      curVox[1] + dVec[1],
+                                                      curVox[2] + dVec[2]), fDir)
                                                                       : AIR;
 
                     // only draw face if EXACTLY one side is AIR
                     mask[curVox[u] + curVox[v] * chunkDimSize[u]] = ((bFace != AIR) != (fFace != AIR)) ? ((bFace != AIR) ? bFace : fFace) : AIR;
                 }
 
-            // starts at -1 for first face, which is truly at 0 relative to chunk --> inc reflects face position
+            // starts at -1 for first face, which is truly blockAt 0 relative to chunk --> inc reflects face position
             curVox[dim]++;
 
             // ---------------------- GENERATE MESH FOR MASK ----------------------
@@ -216,7 +216,7 @@ void ChunkMeshingSystem::greedyMesh(entt::entity &chunk, entt::registry &registr
 
     // note that new mesh was constructed based on changes
     // pretty sure this is an lvalue so this works
-    registry.get<BlockComponent>(chunk).hasChanged = false;
+    registry.get<ChunkComponent>(chunk).hasChanged = false;
     registry.get<MeshComponent>(chunk).mustUpdateBuffer = true;
 }
 
