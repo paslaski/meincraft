@@ -3,6 +3,7 @@
 #include "Camera.h"
 #include <GLFW/glfw3.h>
 #include <entt.hpp>
+#include <memory>
 #include "Texture.h"
 #include "Shader.h"
 #include "Components.h"
@@ -11,16 +12,16 @@ class Camera;
 
 class RenderSystem {
 public:
-    RenderSystem();
+    RenderSystem(std::shared_ptr<Camera> cam);
     ~RenderSystem();
 
     void update(entt::registry& registry);
     GLFWwindow* get_window() { return window; };
-    Camera* get_camera() { return &camera; };
+    Camera* get_camera() { return camera.get(); };
 
 private:
     GLFWwindow* window;
-    Camera camera;
+    std::shared_ptr<Camera> camera;
 
     std::unique_ptr<Texture> textureArray;
     std::unique_ptr<Shader> textureArrayShader;

@@ -5,7 +5,7 @@
 #include <iostream>
 
 ChunkGenerator::ChunkGenerator(int seed, entt::registry& registry)
-    : m_Seed(seed), m_Registry(registry), frequency(0.01), octaves(1), lacunarity(2.0), gain(0.5)
+    : m_Seed(seed), m_Registry(registry)
 {
     terrainBaseNoise.SetSeed(m_Seed);
     terrainBaseNoise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
@@ -33,10 +33,6 @@ ChunkGenerator::ChunkGenerator(int seed, entt::registry& registry)
 
 ChunkGenerator::~ChunkGenerator()
 {}
-
-// change blockComponent to chunkComponent, blockAt to blockAt, add biomeMap
-// createChunkComponent function invokes generateBaseHeightmap, generateBiomeMap, biomeLookup to create full comp
-
 
 ChunkComponent ChunkGenerator::createChunkComponent(glm::vec3 chunkPos) {
     ChunkComponent chunkComp;
@@ -141,5 +137,16 @@ void ChunkGenerator::generateChunk(glm::vec3 chunkPos) {
     // bool mustUpdateBuffer, unsigned int blockVBO, std::vector<texArrayVertex> chunkVertices;
     // std::move for OpenGL object
     m_Registry.emplace<MeshComponent>(e_Chunk, true, std::move(chunkVBO), chunkVertices);
+
+//    chunkMap[std::make_pair((int)chunkPos.x, (int)chunkPos.z)] = &e_Chunk;
+    chunkMap.insert({std::make_pair(chunkPos.x, chunkPos.z), &e_Chunk});
 }
 
+void ChunkGenerator::destroyChunk(glm::vec3 chunkPos)
+{
+    std::map<std::pair<int, int>, entt::entity*>::iterator iter = chunkMap.find(std::make_pair(chunkPos.x, chunkPos.z));
+    if (iter != chunkMap.end())
+        chunkMap.erase(iter);
+    else
+        std::cout << "ChunkGenerator::WARNING - chunkMap entry deletion requested, but no entry found." << std::endl;
+}

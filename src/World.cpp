@@ -2,7 +2,8 @@
 #include "World.h"
 
 World::World()
-    : renderSystem(RenderSystem()), registry(entt::registry()),
+// must call createPlayer() before user camera can be passed to renderSystem & inputSystem
+    : renderSystem((createPlayer(), retrievePlayerCamera())), registry(entt::registry()),
       inputSystem(renderSystem.get_window(), renderSystem.get_camera()),
       chunkLoaderSystem(registry),
       chunkMeshingSystem(ChunkMeshingSystem())
@@ -33,4 +34,18 @@ void World::update()
 bool World::isDestroyed()
 {
     return glfwWindowShouldClose(renderSystem.get_window());
+}
+
+void World::createPlayer() {
+    entt::entity player = registry.create();
+    registry.emplace<CameraComponent>(player, std::make_shared<Camera>(glm::vec3(0.0f, 100.0f, 0.0f)));
+    // eventually add inventory component
+}
+
+std::shared_ptr<Camera> World::retrievePlayerCamera()
+{
+    // there should only be one player with camera per game, so return first value found
+    auto playerView = registry.view<CameraComponent>();
+    for (auto e_Player : playerView)
+        return registry.get<CameraComponent>(e_Player).camera;
 }

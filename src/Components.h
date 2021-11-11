@@ -1,16 +1,13 @@
 #pragma once
 
 #include <string>
+#include <memory>
 #include <glm/vec3.hpp>
 #include "Block.h"
 #include "Chunk.h"
 #include "Texture.h"
 #include "Biome.h"
-
-struct TagComponent
-{
-    std::string tag;
-};
+#include "Camera.h"
 
 struct PositionComponent
 {
@@ -51,8 +48,7 @@ struct MeshComponent // can add more VBOs for different rendering processes
     // eventually may need bool to track if VBO needs initializing
 };
 
-struct InputComponent
+struct CameraComponent
 {
-    // i think glfw uses some integer enum for keys
-    int key;
+    std::shared_ptr<Camera> camera;
 };

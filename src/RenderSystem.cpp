@@ -5,12 +5,14 @@
 #include <glad/glad.h>
 
 
-RenderSystem::RenderSystem()
+RenderSystem::RenderSystem(std::shared_ptr<Camera> cam)
+    : camera(cam)
 {
     // create GLFW window
     createWindow();
-    // initialize camera
-    camera = Camera(glm::vec3(0.0f, 0.0f, 3.0f));
+
+//    // initialize camera
+//    camera = Camera(glm::vec3(0.0f, 100.0f, 3.0f));
 
     // instantiate texture array & associated shader for blocks
     textureArray = std::make_unique<Texture>("/Users/robpaslaski/Documents/meincraft/img/texture_atlas.png",
@@ -37,8 +39,6 @@ void RenderSystem::update(entt::registry& registry)
 {
     clear_buffers();
 
-//    simple_render_chunk(registry);
-//    render_dirt_system(registry);
     renderChunks(registry);
 
     glfwSwapBuffers(window);
@@ -53,8 +53,8 @@ void RenderSystem::renderChunks(entt::registry& registry)
 
     // create transformations
     // might want zFar = function of number of loaded chunks
-    glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 400.0f);
-    glm::mat4 view = camera.GetViewMatrix();
+    glm::mat4 projection = glm::perspective(glm::radians(camera->Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 400.0f);
+    glm::mat4 view = camera->GetViewMatrix();
 
     // pass transformation matrices to the shader
     textureArrayShader->SetUniformMat4f("projection", projection);

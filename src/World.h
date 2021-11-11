@@ -1,6 +1,7 @@
 #pragma once
 
 #include <entt.hpp>
+#include <memory>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -38,8 +39,7 @@ public:
     ~World();
 
     void update();
-
     bool isDestroyed();
-
-    friend class Entity;
+    void createPlayer();
+    std::shared_ptr<Camera> retrievePlayerCamera();
 };
