@@ -1,6 +1,7 @@
 #pragma once
 
 #include <entt.hpp>
+#include <utility>
 #include "ChunkGenerator.h"
 
 class ChunkLoaderSystem {
@@ -11,9 +12,13 @@ public:
 
     void update(entt::registry& registry);
 
-    // make private after initial testing with single chunk instantiated from main/world
-    void createChunk(entt::registry& registry);
+    // make private after initial testing
     ChunkGenerator chunkGenerator;
 private:
+    std::pair<int, int> getPlayerChunkLocation(entt::registry& registry);
 
+    // load all chunks that are <= $chunkLoadDistance chunks from player
+    const int chunkLoadDistance = 2;
+    // any chunks more than $chunkUnloadDistance from player should be removed from memory
+    const int chunkUnloadDistance = 3;
 };

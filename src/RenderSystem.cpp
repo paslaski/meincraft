@@ -11,9 +11,6 @@ RenderSystem::RenderSystem(std::shared_ptr<Camera> cam)
     // create GLFW window
     createWindow();
 
-//    // initialize camera
-//    camera = Camera(glm::vec3(0.0f, 100.0f, 3.0f));
-
     // instantiate texture array & associated shader for blocks
     textureArray = std::make_unique<Texture>("/Users/robpaslaski/Documents/meincraft/img/texture_atlas.png",
                                              GL_TEXTURE_2D_ARRAY);
@@ -90,7 +87,7 @@ void RenderSystem::bindBuffer(MeshComponent& meshComponent)
 void RenderSystem::setBlockVAO()
 {
     // generate OpenGL VAO object
-    GLCall(glGenVertexArrays(1, &blockVAO));
+//    GLCall(glGenVertexArrays(1, &blockVAO));
     GLCall(glBindVertexArray(blockVAO));
 
     // position attribute (3 GLfloats)

@@ -1,5 +1,7 @@
 
 #include <entt.hpp>
+#include <algorithm>
+#include <stdlib.h>
 
 #include "ChunkLoaderSystem.h"
 
@@ -16,47 +18,67 @@ ChunkLoaderSystem::ChunkLoaderSystem(entt::registry& registry)
 ChunkLoaderSystem::~ChunkLoaderSystem()
 {}
 
-//void ChunkLoaderSystem::createChunk(entt::registry& registry)
-//{
-//    entt::entity chunk = registry.create(); // populate registry with chunk entity
-//
-//    // create position component
-//    glm::vec3 pos(0.0f, 0.0f, 0.0f);
-//    registry.emplace<PositionComponent>(chunk, pos);
-//
-//    // create block component
-//    std::vector<BlockType> blocks(CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_WIDTH, BlockType::GRASS);
-//    blocks[0] = BlockType::COBBLESTONE;
-//    blocks[CHUNK_WIDTH - 1] = BlockType::SAND;
-//    blocks[CHUNK_WIDTH - 2] = AIR;
-//    blocks[CHUNK_WIDTH * CHUNK_WIDTH - 1] = BlockType::STONE;
-//    for (int i = 3; i < 8; i++)
-//        for (int j = 5; j < 7; j++)
-//            blocks[i + j * CHUNK_WIDTH] = LADDER;
-//
-//    for (int j = 8; j < 12; j++)
-//        for (int k = 3; k < 9; k++)
-//            blocks[j * CHUNK_WIDTH + k * CHUNK_WIDTH * CHUNK_WIDTH] = LADDER;
-//
-//    // bool hasChanged, std::vector<BlockType> blocks
-//    registry.emplace<ChunkComponent>(chunk, true, blocks);
-//
-//    // create mesh component & associated OpenGL buffer object (uncopyable)
-//    unsigned int chunkVBO;
-//    glGenBuffers(1, &chunkVBO); // future: ensure gen buffer when loaded off disk/from compressed
-//    std::vector<texArrayVertex> chunkVertices;
-//    // bool mustUpdateBuffer, unsigned int blockVBO, std::vector<texArrayVertex> chunkVertices;
-//    // std::move for OpenGL object
-//    registry.emplace<MeshComponent>(chunk, true, std::move(chunkVBO), chunkVertices);
-//}
-
-void ChunkLoaderSystem::update(entt::registry &registry) {
-    // does nothing for now
-
+void ChunkLoaderSystem::update(entt::registry& registry) {
+    // TODO: maybe dont do this every frame?
     // query for player location
+    std::pair<int, int> playerPos = getPlayerChunkLocation(registry);
+
+    std::vector<bool> nearbyChunks((2*chunkLoadDistance+1)*(2*chunkLoadDistance+1), false);
 
     // iterate through entities with chunkComponent in registry
         // UNLOAD_DISTANCE: delete out-of-range
         // LOAD_DISTANCE: generate/load in-range if missing
+    auto chunkView = registry.view<ChunkComponent>();
+    for (const auto& e_Chunk : chunkView)
+    {
+        glm::vec3& chunkPos = registry.get<PositionComponent>(e_Chunk).pos;
+        int xDist = ((int)chunkPos.x - playerPos.first)/CHUNK_WIDTH;
+        int zDist = ((int)chunkPos.z - playerPos.second)/CHUNK_WIDTH;
+        int chunkDist = std::max(std::abs(xDist), std::abs(zDist));
 
+        if (chunkDist >= chunkUnloadDistance) // delete from memory
+        {
+            chunkGenerator.destroyChunk(e_Chunk, chunkPos);
+        }
+        if (chunkDist <= chunkLoadDistance) // mark as present
+        {
+            // x + z*loadedChunkBoxSideLength but offset to avoid negative x/z distances
+            nearbyChunks[(xDist+chunkLoadDistance) + (zDist+chunkLoadDistance)*(2*chunkLoadDistance+1)] = true;
+        }
+    }
+
+    // create any chunks missing within chunkLoadDistance
+    for (int zOff = -chunkLoadDistance; zOff <= chunkLoadDistance; zOff++)
+    {
+        for (int xOff = -chunkLoadDistance; xOff <= chunkLoadDistance; xOff++)
+        {
+            // xOff + zOff*loadedChunkBoxSideLength but offset to avoid negative x/z distances
+            if (!nearbyChunks[(xOff+chunkLoadDistance) + (zOff+chunkLoadDistance)*(2*chunkLoadDistance+1)])
+            {
+                int chunkX = playerPos.first + xOff*CHUNK_WIDTH;
+                int chunkZ = playerPos.second + zOff*CHUNK_WIDTH;
+                chunkGenerator.generateChunk(glm::vec3(chunkX, 0, chunkZ));
+            }
+        }
+    }
+    // TODO: destroy VBO in OpenGL from component destructors
+}
+
+std::pair<int, int> ChunkLoaderSystem::getPlayerChunkLocation(entt::registry& registry)
+{
+    // there should only ever be one player, so return first value found
+    auto playerView = registry.view<CameraComponent>();
+    for (auto& e_Player : playerView)
+    {
+        glm::vec3& playerPos = registry.get<CameraComponent>(e_Player).camera->Position;
+
+        // identify current chunk position (classified by minimum x,z)
+        int xChunk = (int) playerPos.x / CHUNK_WIDTH * CHUNK_WIDTH;
+        int zChunk = (int) playerPos.z / CHUNK_WIDTH * CHUNK_WIDTH;
+        // above statement maps to upper right corner (instead of bottom left) for negative values
+        if (playerPos.x < 0) xChunk -= CHUNK_WIDTH;
+        if (playerPos.z < 0) zChunk -= CHUNK_WIDTH;
+
+        return std::make_pair(xChunk, zChunk);
+    }
 }

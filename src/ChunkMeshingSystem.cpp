@@ -13,7 +13,7 @@ void ChunkMeshingSystem::update(entt::registry& registry)
 {
     // view all chunks (data stored in BlockComponents)
     auto chunkView = registry.view<ChunkComponent>();
-    for (auto chunk : chunkView)
+    for (const auto& chunk : chunkView)
     {
         // only have to update mesh if blocks have changed
         if (registry.get<ChunkComponent>(chunk).hasChanged)
@@ -88,7 +88,7 @@ void ChunkMeshingSystem::constructMesh(entt::entity& chunk, entt::registry& regi
     registry.get<MeshComponent>(chunk).mustUpdateBuffer = true;
 }
 
-void ChunkMeshingSystem::greedyMesh(entt::entity &chunk, entt::registry &registry)
+void ChunkMeshingSystem::greedyMesh(const entt::entity& chunk, entt::registry& registry)
 {
     // // wireframes for debugging
 //     glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );

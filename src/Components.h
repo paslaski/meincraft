@@ -29,6 +29,7 @@ struct ChunkComponent
     }
 };
 
+// destructor being called a lot... does this have to do with initializing each entity's mesh component / overwriting?
 struct MeshComponent // can add more VBOs for different rendering processes
 {
     // shader, texture, VAO stored in RenderSystem for each VBO
@@ -40,7 +41,7 @@ struct MeshComponent // can add more VBOs for different rendering processes
     // disable copying and enable moving
     MeshComponent(bool b, unsigned int vbo, std::vector<texArrayVertex> vertices)
         : mustUpdateBuffer(b), blockVBO(std::move(vbo)), chunkVertices(vertices) {};
-    ~MeshComponent() { glDeleteBuffers(1, &blockVBO); }
+    // swap & pop means destructor called twice --> must call glDeleteBuffers outside
     MeshComponent(const MeshComponent&) = delete;
     MeshComponent operator=(const MeshComponent&) = delete;
     MeshComponent(MeshComponent&&) = default;

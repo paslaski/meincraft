@@ -11,9 +11,9 @@ World::World()
     inputSystem.assign_window_callbacks();
 
     // create 5x5 chunk grid for testing
-    for (int x = 0; x <= 16*10; x+=16)
-        for (int z = 0; z <= 16*10; z+=16)
-            chunkLoaderSystem.chunkGenerator.generateChunk(glm::vec3{x, 0, z});
+//    for (int x = 0; x <= 16*10; x+=16)
+//        for (int z = 0; z <= 16*10; z+=16)
+//            chunkLoaderSystem.chunkGenerator.generateChunk(glm::vec3{x, 0, z});
 }
 
 World::~World()
@@ -25,6 +25,7 @@ void World::update()
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
 
+    // TODO: optimize order (e.g. delete unnecessary chunks before rendering)
     inputSystem.update(registry, deltaTime);
     chunkLoaderSystem.update(registry);
     chunkMeshingSystem.update(registry);

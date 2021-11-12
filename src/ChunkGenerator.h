@@ -18,7 +18,7 @@ public:
     ~ChunkGenerator();
 
     void generateChunk(glm::vec3 chunkPos);
-    void destroyChunk(glm::vec3 chunkPos);
+    void destroyChunk(const entt::entity& e_Chunk, glm::vec3 chunkPos);
     ChunkComponent createChunkComponent(glm::vec3 chunkPos);
     std::vector<BlockType> createChunkBlocks(glm::vec3 chunkPos, std::vector<BiomeType>& biomeMap);
     std::vector<int> generateBaseHeightmap(glm::vec3 chunkPos);

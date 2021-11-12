@@ -142,11 +142,17 @@ void ChunkGenerator::generateChunk(glm::vec3 chunkPos) {
     chunkMap.insert({std::make_pair(chunkPos.x, chunkPos.z), &e_Chunk});
 }
 
-void ChunkGenerator::destroyChunk(glm::vec3 chunkPos)
+void ChunkGenerator::destroyChunk(const entt::entity& e_Chunk, glm::vec3 chunkPos)
 {
     std::map<std::pair<int, int>, entt::entity*>::iterator iter = chunkMap.find(std::make_pair(chunkPos.x, chunkPos.z));
     if (iter != chunkMap.end())
-        chunkMap.erase(iter);
+    {
+        chunkMap.erase(iter); // remove from lookup search tree
+        // TODO: save to disk to support changing environment
+        MeshComponent& meshComp = m_Registry.get<MeshComponent>(e_Chunk);
+        glDeleteBuffers(1, &meshComp.blockVBO); // can't simply include in MeshComp destructor (swap&pop double destruct)
+        m_Registry.destroy(e_Chunk); // delete entity from registry
+    }
     else
         std::cout << "ChunkGenerator::WARNING - chunkMap entry deletion requested, but no entry found." << std::endl;
 }
