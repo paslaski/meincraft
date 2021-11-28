@@ -22,12 +22,12 @@ enum BlockType // : uint8_t
 // SOUTH, WEST, DOWN, NORTH, EAST, UP
 enum Direction
 {
-    SOUTH = 0,
-    WEST = 1,
-    DOWN = 2,
-    NORTH = 3,
-    EAST = 4,
-    UP = 5
+    NORTH = 0,
+    SOUTH = 1,
+    WEST = 2,
+    EAST = 3,
+    UP = 4,
+    DOWN = 5
 };
 
 BlockType sideLookup(BlockType block, Direction direction);

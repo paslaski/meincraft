@@ -5,8 +5,8 @@
 
 std::unordered_map<BlockType, std::array<BlockType, 6>> sideEnumerator = {
         // current dim scheme (face = 0 through 5)
-        // SOUTH, WEST, DOWN, NORTH, EAST, UP
-        {GRASS, std::array<BlockType,6>{GRASS_SIDE, GRASS_SIDE, DIRT, GRASS_SIDE, GRASS_SIDE, GRASS_TOP}}
+        // NORTH, SOUTH, WEST, EAST, UP, DOWN
+        {GRASS, std::array<BlockType,6>{GRASS_SIDE, GRASS_SIDE, GRASS_SIDE, GRASS_SIDE, GRASS_TOP, DIRT}}
 };
 
 BlockType sideLookup(BlockType block, Direction direction)

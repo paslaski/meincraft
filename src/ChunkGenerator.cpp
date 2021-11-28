@@ -68,7 +68,7 @@ std::vector<BlockType> ChunkGenerator::createChunkBlocks(glm::vec3 chunkPos, std
 }
 
 BiomeType ChunkGenerator::biomeLookup(float temperature, float precipitation) {
-    if (temperature > 0.8f && precipitation > 0.8f)
+    if (temperature > 0.8f && precipitation < 0.2f)
         return SandBiome;
 
     return GrassBiome;
@@ -139,20 +139,55 @@ void ChunkGenerator::generateChunk(glm::vec3 chunkPos) {
     m_Registry.emplace<MeshComponent>(e_Chunk, true, std::move(chunkVBO), chunkVertices);
 
 //    chunkMap[std::make_pair((int)chunkPos.x, (int)chunkPos.z)] = &e_Chunk;
-    chunkMap.insert({std::make_pair(chunkPos.x, chunkPos.z), &e_Chunk});
+    chunkMap.insert({std::make_pair(chunkPos.x, chunkPos.z), e_Chunk});
 }
 
 void ChunkGenerator::destroyChunk(const entt::entity& e_Chunk, glm::vec3 chunkPos)
 {
-    std::map<std::pair<int, int>, entt::entity*>::iterator iter = chunkMap.find(std::make_pair(chunkPos.x, chunkPos.z));
-    if (iter != chunkMap.end())
+    std::map<std::pair<int, int>, entt::entity>::iterator iter = chunkMap.find(std::make_pair(chunkPos.x, chunkPos.z));
+    if (iter == chunkMap.end())
     {
-        chunkMap.erase(iter); // remove from lookup search tree
-        // TODO: save to disk to support changing environment
-        MeshComponent& meshComp = m_Registry.get<MeshComponent>(e_Chunk);
-        glDeleteBuffers(1, &meshComp.blockVBO); // can't simply include in MeshComp destructor (swap&pop double destruct)
-        m_Registry.destroy(e_Chunk); // delete entity from registry
-    }
-    else
         std::cout << "ChunkGenerator::WARNING - chunkMap entry deletion requested, but no entry found." << std::endl;
+        return;
+    }
+
+    chunkMap.erase(iter); // remove from lookup search tree
+    // TODO: save to disk to support changing environment
+    MeshComponent& meshComp = m_Registry.get<MeshComponent>(e_Chunk);
+    glDeleteBuffers(1, &meshComp.blockVBO); // can't simply include in MeshComp destructor (swap&pop double destruct)
+    updateNeighbors(entt::null, chunkPos); // update list of neighbors for surrounding chunk entites
+    m_Registry.destroy(e_Chunk); // delete entity from registry
+}
+
+void ChunkGenerator::updateNeighbors(const entt::entity& e_Chunk, glm::vec3 chunkPos)
+{
+    // accepts chunk being created or destroyed and its position
+    // updates surrounding chunks' neighbors array to reflect creation/destruction
+
+    // x defines WEST-EAST axis, z defines NORTH-SOUTH axis
+    // goes EAST --> update WEST, goes SOUTH --> update NORTH
+    // [CW, 0] [0, -CW] [-CW, 0] [0, CW]
+    std::vector<int> dirDist {CHUNK_WIDTH, 0, -CHUNK_WIDTH, 0, CHUNK_WIDTH};
+    std::vector<Direction> oppositeDirIdx {WEST, NORTH, EAST, SOUTH};
+
+    // iterate over surrounding 4 chunks
+    for (int i = 0; i < 4; i++)
+    {
+        // identify x,z coordinates of neighbor chunk
+        std::pair<int, int> neighborPos(chunkPos.x + dirDist[i], chunkPos.z + dirDist[i + 1]);
+        Direction dirTowardUpdatedChunk = oppositeDirIdx[i]; // e_Chunk is in this direction
+
+        // check if neighbor chunk exists in memory
+        auto chunkIter = chunkMap.find(neighborPos);
+        if (chunkIter == chunkMap.end()) // skip iteration if no neighbor exists in memory
+            continue;
+
+        // update neighbor array corresponding to neighboring chunk entity
+        entt::entity e_AdjChunk = chunkIter->second;
+        std::vector<entt::entity>& adjChunkNeighbors = m_Registry.get<ChunkComponent>(e_AdjChunk).neighborEntities;
+        adjChunkNeighbors[dirTowardUpdatedChunk] = e_Chunk;
+
+    }
+    // chunkMap.contains(std::make_pair<int, int>(chunkPos.first + ?, chunkPos.second + ?));
+
 }

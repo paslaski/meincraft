@@ -19,6 +19,10 @@ struct ChunkComponent
 {
     bool hasChanged; // useful to determine if new meshes should be generated
 
+    // "points" to neighboring chunks, but not necessary to use pointers as entities are just integers
+    // convention: indexed with [NORTH, SOUTH, WEST, EAST] per enum
+    std::vector<entt::entity> neighborEntities {entt::null, entt::null, entt::null, entt::null};
+
     // include array of 8 bit enums corresponding to block types
     std::vector<BlockType> blocks; // = std::vector<BlockType>(CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_WIDTH, AIR);
     // classifies biome for each x,z index

@@ -32,7 +32,7 @@ private:
     const int m_Seed;
     entt::registry& m_Registry;
 
-    std::map<std::pair<int, int>, entt::entity*> chunkMap;
+    std::map<std::pair<int, int>, entt::entity> chunkMap;
 
     FastNoiseLite terrainBaseNoise;
     FastNoiseLite biomeTopNoise;
@@ -45,5 +45,7 @@ private:
 
     const int minBiomeHeight = 2; // bounds grass/sand/snow on top of stone
     const int maxBiomeHeight = 7;
+
+    void updateNeighbors(const entt::entity& e_Chunk, glm::vec3 chunkPos);
 
 };
