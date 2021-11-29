@@ -26,7 +26,7 @@ private:
 
     std::map<std::pair<int, int>, entt::entity> chunkMap;
 
-    ChunkComponent createChunkComponent(glm::vec3 chunkPos);
+    void createChunkComponent(const entt::entity& e_Chunk, glm::vec3 chunkPos);
     std::vector<BlockType> createChunkBlocks(glm::vec3 chunkPos, std::vector<BiomeType>& biomeMap);
     std::vector<int> generateBaseHeightmap(glm::vec3 chunkPos);
     std::vector<int> generateBiomeTopHeightmap(glm::vec3 chunkPos);
