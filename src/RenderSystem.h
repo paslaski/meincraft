@@ -2,7 +2,7 @@
 
 #include "Camera.h"
 #include <GLFW/glfw3.h>
-#include <entt.hpp>
+#include <entt/entt.hpp>
 #include <memory>
 #include "Texture.h"
 #include "Shader.h"

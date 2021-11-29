@@ -4,7 +4,7 @@
 
 #include <glm/vec3.hpp>
 #include <FastNoiseLite/FastNoiseLite.h>
-#include <entt.hpp>
+#include <entt/entt.hpp>
 #include <memory>
 
 #include "Chunk.h"

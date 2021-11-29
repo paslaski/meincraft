@@ -1,6 +1,6 @@
 #pragma once
 
-#include <entt.hpp>
+#include <entt/entt.hpp>
 #include <utility>
 #include "ChunkGenerator.h"
 

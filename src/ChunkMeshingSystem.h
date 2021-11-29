@@ -1,6 +1,6 @@
 #pragma once
 
-#include <entt.hpp>
+#include <entt/entt.hpp>
 #include <glad/glad.h>
 #include <glm/vec3.hpp>
 
