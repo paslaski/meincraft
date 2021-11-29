@@ -65,10 +65,14 @@ void InputSystem::processInput(double deltaTime)
         camera->MoveCamera(BACKWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         camera->MoveCamera(LEFT, deltaTime);
-//        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera->MoveCamera(RIGHT, deltaTime);
-//        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+
+    // toggle wireframe with shift
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
