@@ -31,6 +31,27 @@ struct ChunkComponent
     BlockType blockAt(int x, int y, int z) {
         return blocks[x + (z * CHUNK_WIDTH) + (y * CHUNK_WIDTH * CHUNK_WIDTH)];
     }
+
+    // sunlight corresponds to the bits 0000XXXX
+    // torchlight corresponds to bits XXXX0000
+    std::vector<uint8_t> lightMap = std::vector<uint8_t>(CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_WIDTH, 0);
+    int getSunlight(int x, int y, int z) {
+        return lightMap[x + (z * CHUNK_WIDTH) + (y * CHUNK_WIDTH * CHUNK_WIDTH)] & 0xF;
+    }
+    void setSunlight(int x, int y, int z, int val) {
+        lightMap[x + (z * CHUNK_WIDTH) + (y * CHUNK_WIDTH * CHUNK_WIDTH)]
+                = (lightMap[x + (z * CHUNK_WIDTH) + (y * CHUNK_WIDTH * CHUNK_WIDTH)] & 0xF0) | val;
+    }
+    int getTorchlight(int x, int y, int z) {
+        return (lightMap[x + (z * CHUNK_WIDTH) + (y * CHUNK_WIDTH * CHUNK_WIDTH)] >> 4) & 0xF;
+    }
+    void setTorchlight(int x, int y, int z, int val) {
+        lightMap[x + (z * CHUNK_WIDTH) + (y * CHUNK_WIDTH * CHUNK_WIDTH)]
+                = (lightMap[x + (z * CHUNK_WIDTH) + (y * CHUNK_WIDTH * CHUNK_WIDTH)] & 0xF) | (val << 4);
+    }
+    uint8_t lightAt(int x, int y, int z) {
+        return lightMap[x + (z * CHUNK_WIDTH) + (y * CHUNK_WIDTH * CHUNK_WIDTH)];
+    }
 };
 
 // destructor being called a lot... does this have to do with initializing each entity's mesh component / overwriting?

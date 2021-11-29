@@ -3,6 +3,7 @@
 #include "Components.h"
 //#include <glad.h>
 #include <iostream>
+#include <queue>
 
 ChunkGenerator::ChunkGenerator(int seed, entt::registry& registry)
     : m_Seed(seed), m_Registry(registry)
@@ -39,6 +40,7 @@ ChunkComponent ChunkGenerator::createChunkComponent(glm::vec3 chunkPos) {
     chunkComp.hasChanged = true; // toggle for mesh update/construction
     chunkComp.biomeMap = generateBiomeMap(chunkPos);
     chunkComp.blocks = createChunkBlocks(chunkPos, chunkComp.biomeMap);
+    createLightMap(chunkComp);
 
     return chunkComp;
 }
@@ -140,6 +142,8 @@ void ChunkGenerator::generateChunk(glm::vec3 chunkPos) {
 
 //    chunkMap[std::make_pair((int)chunkPos.x, (int)chunkPos.z)] = &e_Chunk;
     chunkMap.insert({std::make_pair(chunkPos.x, chunkPos.z), e_Chunk});
+
+    updateNeighbors(e_Chunk, chunkPos); // place entity in neighbors list of adjacent chunks
 }
 
 void ChunkGenerator::destroyChunk(const entt::entity& e_Chunk, glm::vec3 chunkPos)
@@ -186,8 +190,61 @@ void ChunkGenerator::updateNeighbors(const entt::entity& e_Chunk, glm::vec3 chun
         entt::entity e_AdjChunk = chunkIter->second;
         std::vector<entt::entity>& adjChunkNeighbors = m_Registry.get<ChunkComponent>(e_AdjChunk).neighborEntities;
         adjChunkNeighbors[dirTowardUpdatedChunk] = e_Chunk;
+    }
+}
+
+void ChunkGenerator::createLightMap(ChunkComponent& chunkComp) {
+    // TODO: include entt::entity and update bounds checking to support cross-voxel light flooding
+    struct lightNode {
+        int x, y, z, lightLevel;
+        lightNode(int x, int y, int z, int lightLevel)
+            : x(x), y(y), z(z), lightLevel(lightLevel) {}
+    };
+
+    std::queue<lightNode> q;
+
+    // flood fill sunlight from the top of the chunk
+    // all voxels with direct vertical access to top of chunk are source nodes
+    for (int x = 0; x < CHUNK_WIDTH; x++)
+        for (int z = 0; z < CHUNK_WIDTH; z++)
+        {
+            int y = CHUNK_HEIGHT - 1;
+            // TODO: include OR transparent to support transparent blocks
+            //
+            while (y >= 0 && chunkComp.blockAt(x, y, z) == AIR)
+            {
+                chunkComp.setSunlight(x, y, z, 15); // max light value = 15
+                q.emplace(x, y, z, 15);
+                y--;
+            }
+        }
+
+    // BFS to flood fill sunlight
+    while (!q.empty())
+    {
+        lightNode curNode = q.front();
+        q.pop();
+
+        for (int dir = 0; dir < 6; dir++) // iterate through WEST EAST SOUTH NORTH DOWN UP
+        {
+            int neighborX = curNode.x + deltaXByDir[dir]; // coordinates of adjacent block
+            int neighborY = curNode.y + deltaYByDir[dir];
+            int neighborZ = curNode.z + deltaZByDir[dir];
+
+            if (neighborX < 0 || neighborX >= CHUNK_WIDTH || neighborY < 0 || neighborY >= CHUNK_WIDTH
+                || neighborZ < 0 || neighborZ >= CHUNK_HEIGHT)
+                continue; // out of bounds
+            if (chunkComp.blockAt(neighborX, neighborY, neighborZ) != AIR) // TODO: update for transparent blocks
+                continue; // no light within opaque blocks
+
+            // flood fill adjacent blocks (if lower light level than flood)
+            if (chunkComp.getSunlight(neighborX, neighborY, neighborZ) < curNode.lightLevel - 1) {
+                chunkComp.setSunlight(neighborX, neighborY, neighborZ, curNode.lightLevel - 1);
+                q.emplace(neighborX, neighborY, neighborZ, curNode.lightLevel - 1);
+            }
+        }
 
     }
-    // chunkMap.contains(std::make_pair<int, int>(chunkPos.first + ?, chunkPos.second + ?));
 
 }
+

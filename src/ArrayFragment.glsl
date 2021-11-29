@@ -2,12 +2,12 @@
 
 out vec4 FragColor;
 
-in vec3 ourColor;
+in float sunlightLevel;
 in vec3 texArrayCoords;
 
 uniform sampler2DArray arrayTexture;
 
 void main()
 {
-    FragColor = texture(arrayTexture, texArrayCoords);
+    FragColor = vec4(texture(arrayTexture, texArrayCoords).xyz * sunlightLevel, 1.0f);
 }

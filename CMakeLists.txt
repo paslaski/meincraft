@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 # Add header file
 set(GLEW_H /opt/homebrew/Cellar/glew/2.2.0_1/include/) # GL
-set(GLFW_H /opt/homebrew/Cellar/glfw/3.3.4/include/) # GLFW
+set(GLFW_H /opt/homebrew/Cellar/glfw/3.3.5/include/) # GLFW
 set(GLAD_H /Users/robpaslaski/Downloads/glad/include/)
 set(EXT_H /Users/robpaslaski/Documents/meincraft/ext/)
 set(ENTT_H /Users/robpaslaski/Documents/meincraft/entt/)
@@ -14,7 +14,7 @@ include_directories(${GLEW_H} ${GLFW_H} ${GLAD_H} ${EXT_H} ${ENTT_H})
 
 # Add target link
 set(GLEW_LINK /opt/homebrew/Cellar/glew/2.2.0_1/lib/libGLEW.2.2.dylib)
-set(GLFW_LINK /opt/homebrew/Cellar/glfw/3.3.4/lib/libglfw.3.dylib)
+set(GLFW_LINK /opt/homebrew/Cellar/glfw/3.3.5/lib/libglfw.3.dylib)
 link_libraries(${OPENGL} ${GLEW_LINK} ${GLFW_LINK})
 
 ## Add header file

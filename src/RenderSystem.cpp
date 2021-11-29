@@ -98,6 +98,10 @@ void RenderSystem::setBlockVAO()
     // do we need to specify last as int instead of float?
     GLCall(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(texArrayVertex), (void*)offsetof(texArrayVertex, uTexCoord)));
     GLCall(glEnableVertexAttribArray(1));
+
+    // lighting attribute (1 GLubyte)
+    GLCall(glVertexAttribPointer(2, 1, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(texArrayVertex), (void*)offsetof(texArrayVertex, lightLevel)));
+    GLCall(glEnableVertexAttribArray(2));
 }
 
 void RenderSystem::createWindow()

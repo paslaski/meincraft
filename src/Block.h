@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 enum BlockType // : uint8_t
 {
     // NOTE: AIR must be default value of BlockType
@@ -29,5 +31,12 @@ enum Direction
     UP = 4,
     DOWN = 5
 };
+
+// WEST = -1, EAST = +1
+const std::vector<int> deltaXByDir {0, 0, -1, 1, 0, 0};
+// SOUTH = -1, NORTH = +1
+const std::vector<int> deltaZByDir {1, -1, 0, 0, 0, 0};
+// DOWN = -1, UP = +1
+const std::vector<int> deltaYByDir {0, 0, 0, 0, 1, -1};
 
 BlockType sideLookup(BlockType block, Direction direction);

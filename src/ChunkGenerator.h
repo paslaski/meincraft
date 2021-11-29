@@ -19,6 +19,13 @@ public:
 
     void generateChunk(glm::vec3 chunkPos);
     void destroyChunk(const entt::entity& e_Chunk, glm::vec3 chunkPos);
+
+private:
+    const int m_Seed;
+    entt::registry& m_Registry;
+
+    std::map<std::pair<int, int>, entt::entity> chunkMap;
+
     ChunkComponent createChunkComponent(glm::vec3 chunkPos);
     std::vector<BlockType> createChunkBlocks(glm::vec3 chunkPos, std::vector<BiomeType>& biomeMap);
     std::vector<int> generateBaseHeightmap(glm::vec3 chunkPos);
@@ -27,12 +34,8 @@ public:
     std::vector<BiomeType> generateBiomeMap(glm::vec3 chunkPos);
     BiomeType biomeLookup(float temperature, float precipitation);
 //    void generateFlora(std::vector<BlockType> blocks);
-
-private:
-    const int m_Seed;
-    entt::registry& m_Registry;
-
-    std::map<std::pair<int, int>, entt::entity> chunkMap;
+    void updateNeighbors(const entt::entity& e_Chunk, glm::vec3 chunkPos);
+    void createLightMap(ChunkComponent& chunkComp);
 
     FastNoiseLite terrainBaseNoise;
     FastNoiseLite biomeTopNoise;
@@ -45,7 +48,5 @@ private:
 
     const int minBiomeHeight = 2; // bounds grass/sand/snow on top of stone
     const int maxBiomeHeight = 7;
-
-    void updateNeighbors(const entt::entity& e_Chunk, glm::vec3 chunkPos);
 
 };

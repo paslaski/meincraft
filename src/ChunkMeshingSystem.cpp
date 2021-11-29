@@ -1,6 +1,5 @@
 
 #include "ChunkMeshingSystem.h"
-#include "Components.h"
 #include <iostream>
 
 ChunkMeshingSystem::ChunkMeshingSystem()
@@ -78,7 +77,8 @@ void ChunkMeshingSystem::constructMesh(entt::entity& chunk, entt::registry& regi
                                 static_cast<GLfloat>(pos.y + j + yVertOffset + yFaceOffset),
                                 static_cast<GLfloat>(pos.z + k + zVertOffset + zFaceOffset),
                                 uvCoords[v*2], uvCoords[v*2 + 1],
-                                static_cast<GLfloat>(sideLookup(blocks.blockAt(i, j, k), dir[face]))
+                                static_cast<GLfloat>(sideLookup(blocks.blockAt(i, j, k), dir[face])),
+                                0xFF
                         );
                     }
 
@@ -112,20 +112,26 @@ void ChunkMeshingSystem::greedyMesh(const entt::entity& chunk, entt::registry& r
     {
         Direction bDir = bFaceDirs[dim];
         Direction fDir = fFaceDirs[dim];
-        // track dimensions of mask plane
+        // track dimensions of blockMask plane
         int u = (dim + 1) % 3;
         int v = (dim + 2) % 3;
-        // dVec = unit vector perpendicular to mask
+        // dVec = unit vector perpendicular to blockMask
         int dVec[3] = {0, 0, 0};
         dVec[dim] = 1;
         // tracks position (relative to local voxel coordinates where start = (0,0,0) & max=(CHUNK_WIDTH-1, ...)
-        int curVox[3];
+        std::vector<int> curVox(3, 0);
+
+        // dirs[dim][bFace == AIR] gives direction of face from voxel
+        std::vector<std::vector<Direction>> dirs {{WEST, EAST}, {DOWN, UP}, {SOUTH, NORTH}};
 
         // tracks face type in UV plane that dim passes through
-        BlockType mask[chunkDimSize[u] * chunkDimSize[v]]; // must explicitly define each entry, AIR!=default
+        BlockType blockMask[chunkDimSize[u] * chunkDimSize[v]]; // must explicitly define each entry, AIR!=default
 
         for (curVox[dim] = -1; curVox[dim] < chunkDimSize[dim]; ) // depth=N has N+1 faces
         {
+            std::vector<uint8_t> lightMask(chunkDimSize[u] * chunkDimSize[v], 0);
+            std::vector<int> dirMask(chunkDimSize[u] * chunkDimSize[v], -1); // for invalid enum default value
+
             // ---------------------- COMPUTE MASK ----------------------
             for (curVox[v] = 0; curVox[v] < chunkDimSize[v]; curVox[v]++)
                 for (curVox[u] = 0; curVox[u] < chunkDimSize[u]; curVox[u]++)
@@ -140,27 +146,42 @@ void ChunkMeshingSystem::greedyMesh(const entt::entity& chunk, entt::registry& r
                                                                       : AIR;
 
                     // only draw face if EXACTLY one side is AIR
-                    mask[curVox[u] + curVox[v] * chunkDimSize[u]] = ((bFace != AIR) != (fFace != AIR)) ? ((bFace != AIR) ? bFace : fFace) : AIR;
+                    blockMask[curVox[u] + curVox[v] * chunkDimSize[u]] = ((bFace == AIR) != (fFace == AIR)) ?
+                                                                                ((bFace != AIR) ? bFace : fFace) : AIR;
+                    // identify direction of face from non-AIR block
+                    dirMask[curVox[u] + curVox[v] * chunkDimSize[u]] = dirs[dim][(bFace == AIR)];
+
+                    // track light level of drawn face (light at AIR block)
+                    // must supply x, y, z coordinates of non-AIR block
+                    int x, y, z;
+                    if (bFace == AIR) // non-AIR block is dVec forward at fFace position
+                        x = curVox[0] + dVec[0], y = curVox[1] + dVec[1], z = curVox[2] + dVec[2];
+                    else // non-AIR block is at curVox, no need to step in dVec direction
+                        x = curVox[0], y = curVox[1], z = curVox[2];
+                    lightMask[curVox[u] + curVox[v] * chunkDimSize[u]]
+                        = getLightLevel(registry, chunk, blocks, x, y, z, dirs[dim][(bFace == AIR)]);
                 }
 
             // starts at -1 for first face, which is truly blockAt 0 relative to chunk --> inc reflects face position
             curVox[dim]++;
 
             // ---------------------- GENERATE MESH FOR MASK ----------------------
-            // iterate across mask, grouping together equal adjacent faces
+            // iterate across blockMask, grouping together equal adjacent faces
             for (int j = 0; j < chunkDimSize[v]; j++)
             {
                 for (int i = 0; i < chunkDimSize[u];)
                 {
-                    BlockType curFace = mask[i + j * chunkDimSize[u]];
+                    BlockType curFace = blockMask[i + j * chunkDimSize[u]];
+                    uint8_t curLightLevel = lightMask[i + j * chunkDimSize[u]];
                     if (curFace == AIR) {
                         i++;
                         continue; // ignore blank faces
                     }
 
-                    // find maximum width of identically drawn faces
+                    // find maximum width of identically drawn faces (block face and light level)
                     int width = 1; // absolute length
-                    while (i + width < chunkDimSize[u] && mask[i + width + j * chunkDimSize[u]] == curFace)
+                    while (i + width < chunkDimSize[u] && blockMask[i + width + j * chunkDimSize[u]] == curFace
+                                                       && lightMask[i + width + j * chunkDimSize[u]] == curLightLevel)
                     {
                         width++;
                     }
@@ -168,9 +189,10 @@ void ChunkMeshingSystem::greedyMesh(const entt::entity& chunk, entt::registry& r
                     int height = 1; // absolute length
                     while (j + height < chunkDimSize[v])
                     {
-                        // move across width-direction, checking all blocks same as curFace
+                        // move across width-direction, checking all faces are identical (face type, light)
                         int wIncrement = 0;
-                        while (wIncrement < width && mask[i + wIncrement + (j+height) * chunkDimSize[u]] == curFace)
+                        while (wIncrement < width && blockMask[i + wIncrement + (j + height) * chunkDimSize[u]] == curFace
+                                                  && lightMask[i + wIncrement + (j + height) * chunkDimSize[u]] == curLightLevel)
                         { wIncrement++; }
                         if (wIncrement == width) // entire height column matches curFace, can append entire column
                             height++;
@@ -179,7 +201,7 @@ void ChunkMeshingSystem::greedyMesh(const entt::entity& chunk, entt::registry& r
                     }
 
                     // store quad vertices for rendering (ultimately 2 triangles)
-                    curVox[u] = i; // curVox[dim] already accurate, [u] and [v] reset on next mask creation
+                    curVox[u] = i; // curVox[dim] already accurate, [u] and [v] reset on next blockMask creation
                     curVox[v] = j;
                     // dU and dV are vectors in u/v directions of width/height lengths, curVox+dU+dV = end of quad
                     int dU[3] = {0, 0, 0};
@@ -199,14 +221,14 @@ void ChunkMeshingSystem::greedyMesh(const entt::entity& chunk, entt::registry& r
                     vEnd[0] = pos[0] + curVox[0] + dU[0] + dV[0]; vEnd[1] = pos[1] + curVox[1] + dU[1] + dV[1];
                     vEnd[2] = pos[2] + curVox[2] + dU[2] + dV[2];
 
-                    // TODO: include normals in .equals() to support 6 unique faces instead of 3 (also lighting values)
-                    Direction dirs[3] = {WEST, DOWN, SOUTH};
-                    appendQuad(vStart, vU, vV, vEnd, curFace, width, height, dirs[dim], vertices);
+                    appendQuad(vStart, vU, vV, vEnd, curFace, width, height, dirs[dim][0], vertices, curLightLevel); // curVox, registry, blocks);
 
-                    // clear mask for subsequent passes (prevents drawing same face again)
+                    // clear masks for subsequent passes (prevents drawing same face again)
                     for (int h = 0; h < height; h++)
                         for (int w = 0; w < width; w++)
-                            mask[i + w + (j + h) * chunkDimSize[u]] = AIR;
+                            blockMask[i + w + (j + h) * chunkDimSize[u]] = AIR,
+                            lightMask[i + w + (j + h) * chunkDimSize[u]] = 0,
+                            dirMask[i + w + (j + h) * chunkDimSize[u]] = -1;
 
                     i += width;
                 }
@@ -223,31 +245,97 @@ void ChunkMeshingSystem::greedyMesh(const entt::entity& chunk, entt::registry& r
 // appends a face to the texArrayVertex vector (two triangles/6 vertices, "quad" for short)
 void ChunkMeshingSystem::appendQuad(glm::vec3 vStart, glm::vec3 vWidth, glm::vec3 vHeight, glm::vec3 vEnd,
                               BlockType block, int width, int height,
-                              Direction dir, std::vector<texArrayVertex>& vertices) {
+                              Direction dir, std::vector<texArrayVertex>& vertices,
+                              uint8_t lightLevel)
+                              {
+//                                  (glm::vec3 vStart, glm::vec3 vWidth, glm::vec3 vHeight, glm::vec3 vEnd,
+//                                          BlockType block, int width, int height,
+//                                          Direction dir, std::vector<texArrayVertex>& vertices,
+//                                          std::vector<int>& curVox,
+//                                          entt::registry& registry, ChunkComponent& chunkComp)
+    BlockType blockSide = sideLookup(block, dir);
+//    GLubyte lightLevel;
 
-    // draw out the UV coords on paper to ensure sides drawn same, top/bottom face same way
-    // make a new member variable array, indexed by Direction, of uvCoords arrays
-    // might need to std::swap width/height for WEST/EAST... similar for DOWN/UP?
-    // ^ NEED MORE COMPLICATED TESTS AFTER
+//    if (dir == WEST && curVox[0] == 0) // x = -1 in current chunk refers to x = CW-1 in western neighbor
+//        if (chunkComp.neighborEntities[WEST] != entt::null)
+//            lightLevel = registry.get<ChunkComponent>(chunkComp.neighborEntities[WEST]).lightAt(CHUNK_WIDTH-1, curVox[1], curVox[2]);
+//        else
+//            lightLevel = 0xFF;
+//    else if (dir == EAST && curVox[0] == (CHUNK_WIDTH - 1)) // x = CW is x = 0 in eastern neighbor
+//        if (chunkComp.neighborEntities[EAST] != entt::null)
+//            lightLevel = registry.get<ChunkComponent>(chunkComp.neighborEntities[EAST]).lightAt(0, curVox[1], curVox[2]);
+//        else
+//            lightLevel = 0xFF;
+//    else if (dir == SOUTH && curVox[2] == 0) // z = -1 is z = CW-1 in southern neighbor
+//        if (chunkComp.neighborEntities[SOUTH] != entt::null)
+//            lightLevel = registry.get<ChunkComponent>(chunkComp.neighborEntities[SOUTH]).lightAt(curVox[0], curVox[1], CHUNK_WIDTH-1);
+//        else
+//            lightLevel = 0xFF;
+//    else if (dir == NORTH && curVox[2] == (CHUNK_WIDTH - 1)) // z = CW is z = 0 in northern neighbor
+//        if (chunkComp.neighborEntities[NORTH] != entt::null)
+//            lightLevel = registry.get<ChunkComponent>(chunkComp.neighborEntities[NORTH]).lightAt(curVox[0], curVox[1], 0);
+//        else
+//            lightLevel = 0xFF;
+//    else if (dir == DOWN && curVox[1] == 0)
+//        lightLevel = 0xFF; // lets just give it direct sunlight? player couldn't ever view
+//    else if (dir == UP && curVox[1] == (CHUNK_HEIGHT - 1))
+//        lightLevel = 0xFF; // always direct sunlight
+//    else // delta?ByDir[dir] and bounds checking
+//        lightLevel = chunkComp.lightAt(curVox[0], curVox[1], curVox[2]);
 
-    // WEST EAST messed up
     if (dir == WEST || dir == EAST)
     {
-        vertices.emplace_back(vStart.x, vStart.y, vStart.z, uvCoords[1]*height, uvCoords[0]*width, sideLookup(block, dir));
-        vertices.emplace_back(vWidth.x, vWidth.y, vWidth.z, uvCoords[3]*height, uvCoords[2]*width, sideLookup(block, dir));
-        vertices.emplace_back(vHeight.x, vHeight.y, vHeight.z, uvCoords[5]*height, uvCoords[4]*width, sideLookup(block, dir));
-        vertices.emplace_back(vHeight.x, vHeight.y, vHeight.z, uvCoords[7]*height, uvCoords[6]*width, sideLookup(block, dir));
-        vertices.emplace_back(vEnd.x, vEnd.y, vEnd.z, uvCoords[9]*height, uvCoords[8]*width, sideLookup(block, dir));
-        vertices.emplace_back(vWidth.x, vWidth.y, vWidth.z, uvCoords[11]*height, uvCoords[10]*width, sideLookup(block, dir));
+        vertices.emplace_back(vStart.x, vStart.y, vStart.z, uvCoords[1]*height, uvCoords[0]*width, blockSide, lightLevel);
+        vertices.emplace_back(vWidth.x, vWidth.y, vWidth.z, uvCoords[3]*height, uvCoords[2]*width, blockSide, lightLevel);
+        vertices.emplace_back(vHeight.x, vHeight.y, vHeight.z, uvCoords[5]*height, uvCoords[4]*width, blockSide, lightLevel);
+        vertices.emplace_back(vHeight.x, vHeight.y, vHeight.z, uvCoords[7]*height, uvCoords[6]*width, blockSide, lightLevel);
+        vertices.emplace_back(vEnd.x, vEnd.y, vEnd.z, uvCoords[9]*height, uvCoords[8]*width, blockSide, lightLevel);
+        vertices.emplace_back(vWidth.x, vWidth.y, vWidth.z, uvCoords[11]*height, uvCoords[10]*width, blockSide, lightLevel);
     } else
     {
-        vertices.emplace_back(vStart.x, vStart.y, vStart.z, uvCoords[0]*width, uvCoords[1]*height, sideLookup(block, dir));
-        vertices.emplace_back(vWidth.x, vWidth.y, vWidth.z, uvCoords[2]*width, uvCoords[3]*height, sideLookup(block, dir));
-        vertices.emplace_back(vHeight.x, vHeight.y, vHeight.z, uvCoords[4]*width, uvCoords[5]*height, sideLookup(block, dir));
-        vertices.emplace_back(vHeight.x, vHeight.y, vHeight.z, uvCoords[6]*width, uvCoords[7]*height, sideLookup(block, dir));
-        vertices.emplace_back(vEnd.x, vEnd.y, vEnd.z, uvCoords[8]*width, uvCoords[9]*height, sideLookup(block, dir));
-        vertices.emplace_back(vWidth.x, vWidth.y, vWidth.z, uvCoords[10]*width, uvCoords[11]*height, sideLookup(block, dir));
+        vertices.emplace_back(vStart.x, vStart.y, vStart.z, uvCoords[0]*width, uvCoords[1]*height, blockSide, lightLevel);
+        vertices.emplace_back(vWidth.x, vWidth.y, vWidth.z, uvCoords[2]*width, uvCoords[3]*height, blockSide, lightLevel);
+        vertices.emplace_back(vHeight.x, vHeight.y, vHeight.z, uvCoords[4]*width, uvCoords[5]*height, blockSide, lightLevel);
+        vertices.emplace_back(vHeight.x, vHeight.y, vHeight.z, uvCoords[6]*width, uvCoords[7]*height, blockSide, lightLevel);
+        vertices.emplace_back(vEnd.x, vEnd.y, vEnd.z, uvCoords[8]*width, uvCoords[9]*height, blockSide, lightLevel);
+        vertices.emplace_back(vWidth.x, vWidth.y, vWidth.z, uvCoords[10]*width, uvCoords[11]*height, blockSide, lightLevel);
     }
 
 }
 
+uint8_t ChunkMeshingSystem::getLightLevel(entt::registry& registry, const entt::entity& e_Chunk,
+                                          ChunkComponent& chunkComp, const int x, const int y,
+                                          const int z, Direction dir)
+{
+    // x, y, z is the coordinate of the voxel with the face being inspected
+    GLubyte lightLevel;
+
+    if (dir == WEST && x == 0) // x = -1 in current chunk refers to x = CW-1 in western neighbor
+        if (chunkComp.neighborEntities[WEST] != entt::null)
+            lightLevel = registry.get<ChunkComponent>(chunkComp.neighborEntities[WEST]).lightAt(CHUNK_WIDTH-1, y, z);
+        else
+            lightLevel = 0xFF;
+    else if (dir == EAST && x == (CHUNK_WIDTH - 1)) // x = CW is x = 0 in eastern neighbor
+        if (chunkComp.neighborEntities[EAST] != entt::null)
+            lightLevel = registry.get<ChunkComponent>(chunkComp.neighborEntities[EAST]).lightAt(0, y, z);
+        else
+            lightLevel = 0xFF;
+    else if (dir == SOUTH && z == 0) // z = -1 is z = CW-1 in southern neighbor
+        if (chunkComp.neighborEntities[SOUTH] != entt::null)
+            lightLevel = registry.get<ChunkComponent>(chunkComp.neighborEntities[SOUTH]).lightAt(x, y, CHUNK_WIDTH-1);
+        else
+            lightLevel = 0xFF;
+    else if (dir == NORTH && z == (CHUNK_WIDTH - 1)) // z = CW is z = 0 in northern neighbor
+        if (chunkComp.neighborEntities[NORTH] != entt::null)
+            lightLevel = registry.get<ChunkComponent>(chunkComp.neighborEntities[NORTH]).lightAt(x, y, 0);
+        else
+            lightLevel = 0xFF;
+    else if (dir == DOWN && y == 0)
+        lightLevel = 0xFF; // lets just give it direct sunlight? player couldn't ever view
+    else if (dir == UP && y == (CHUNK_HEIGHT - 1))
+        lightLevel = 0xFF; // always direct sunlight
+    else // delta?ByDir[dir] and bounds checking
+        lightLevel = chunkComp.lightAt(x - deltaXByDir[dir], y - deltaYByDir[dir], z - deltaZByDir[dir]);
+
+    return lightLevel;
+}

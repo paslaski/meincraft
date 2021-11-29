@@ -33,10 +33,13 @@ struct texArrayVertex
 {
     GLfloat xWorldPos; GLfloat yWorldPos; GLfloat zWorldPos;
     GLfloat uTexCoord; GLfloat vTexCoord; GLfloat pictureNum;
+    GLubyte lightLevel;
 
     texArrayVertex(GLfloat xPos, GLfloat yPos, GLfloat zPos,
-                   GLfloat uCoord, GLfloat vCoord, GLfloat picNum)
+                   GLfloat uCoord, GLfloat vCoord, GLfloat picNum,
+                   GLubyte lightLevel)
             : xWorldPos(xPos), yWorldPos(yPos), zWorldPos(zPos),
-              uTexCoord(uCoord), vTexCoord(vCoord), pictureNum(picNum)
+              uTexCoord(uCoord), vTexCoord(vCoord), pictureNum(picNum),
+              lightLevel(lightLevel)
     {};
 };
