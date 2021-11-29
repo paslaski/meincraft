@@ -154,12 +154,20 @@ void ChunkMeshingSystem::greedyMesh(const entt::entity& chunk, entt::registry& r
                     // track light level of drawn face (light at AIR block)
                     // must supply x, y, z coordinates of non-AIR block
                     int x, y, z;
-                    if (bFace == AIR) // non-AIR block is dVec forward at fFace position
-                        x = curVox[0] + dVec[0], y = curVox[1] + dVec[1], z = curVox[2] + dVec[2];
-                    else // non-AIR block is at curVox, no need to step in dVec direction
-                        x = curVox[0], y = curVox[1], z = curVox[2];
-                    lightMask[curVox[u] + curVox[v] * chunkDimSize[u]]
-                        = getLightLevel(registry, chunk, blocks, x, y, z, dirs[dim][(bFace == AIR)]);
+                    if (bFace == AIR) // get light level adjacent AIR block
+                        lightMask[curVox[u] + curVox[v] * chunkDimSize[u]]
+                                = getLightLevelAt(registry, chunk, blocks, curVox[0], curVox[1], curVox[2]);
+                    else // fFace, one step in dVec (across face), is AIR
+                        lightMask[curVox[u] + curVox[v] * chunkDimSize[u]]
+                                = getLightLevelAt(registry, chunk, blocks, curVox[0] + dVec[0],
+                                                  curVox[1] + dVec[1], curVox[2] + dVec[2]);
+
+//                    if (bFace == AIR) // non-AIR block is dVec forward at fFace position
+//                        x = curVox[0] + dVec[0], y = curVox[1] + dVec[1], z = curVox[2] + dVec[2];
+//                    else // non-AIR block is at curVox, no need to step in dVec direction
+//                        x = curVox[0], y = curVox[1], z = curVox[2];
+//                    lightMask[curVox[u] + curVox[v] * chunkDimSize[u]]
+//                        = getLightLevel(registry, chunk, blocks, x, y, z, dirs[dim][(bFace == AIR)]);
                 }
 
             // starts at -1 for first face, which is truly blockAt 0 relative to chunk --> inc reflects face position
@@ -221,7 +229,7 @@ void ChunkMeshingSystem::greedyMesh(const entt::entity& chunk, entt::registry& r
                     vEnd[0] = pos[0] + curVox[0] + dU[0] + dV[0]; vEnd[1] = pos[1] + curVox[1] + dU[1] + dV[1];
                     vEnd[2] = pos[2] + curVox[2] + dU[2] + dV[2];
 
-                    appendQuad(vStart, vU, vV, vEnd, curFace, width, height, dirs[dim][0], vertices, curLightLevel); // curVox, registry, blocks);
+                    appendQuad(vStart, vU, vV, vEnd, curFace, width, height, dirs[dim][0], vertices, curLightLevel);
 
                     // clear masks for subsequent passes (prevents drawing same face again)
                     for (int h = 0; h < height; h++)
@@ -303,39 +311,38 @@ void ChunkMeshingSystem::appendQuad(glm::vec3 vStart, glm::vec3 vWidth, glm::vec
 
 }
 
-uint8_t ChunkMeshingSystem::getLightLevel(entt::registry& registry, const entt::entity& e_Chunk,
+uint8_t ChunkMeshingSystem::getLightLevelAt(entt::registry& registry, const entt::entity& e_Chunk,
                                           ChunkComponent& chunkComp, const int x, const int y,
-                                          const int z, Direction dir)
-{
+                                          const int z) {
     // x, y, z is the coordinate of the voxel with the face being inspected
     GLubyte lightLevel;
 
-    if (dir == WEST && x == 0) // x = -1 in current chunk refers to x = CW-1 in western neighbor
+    if (x == -1) // x = -1 in current chunk refers to x = CW-1 in western neighbor
         if (chunkComp.neighborEntities[WEST] != entt::null)
-            lightLevel = registry.get<ChunkComponent>(chunkComp.neighborEntities[WEST]).lightAt(CHUNK_WIDTH-1, y, z);
+            lightLevel = registry.get<ChunkComponent>(chunkComp.neighborEntities[WEST]).lightAt(CHUNK_WIDTH - 1, y, z);
         else
             lightLevel = 0xFF;
-    else if (dir == EAST && x == (CHUNK_WIDTH - 1)) // x = CW is x = 0 in eastern neighbor
+    else if (x == CHUNK_WIDTH) // x = CW is x = 0 in eastern neighbor
         if (chunkComp.neighborEntities[EAST] != entt::null)
             lightLevel = registry.get<ChunkComponent>(chunkComp.neighborEntities[EAST]).lightAt(0, y, z);
         else
             lightLevel = 0xFF;
-    else if (dir == SOUTH && z == 0) // z = -1 is z = CW-1 in southern neighbor
+    else if (y == -1) // let's just give it direct sunlight at bottom, no one will see for now
+        lightLevel = 0xFF;
+    else if (y == CHUNK_HEIGHT) // always direct sunlight
+        lightLevel = 0xFF;
+    else if (z == -1) // z = -1 is z = CW-1 in southern neighbor
         if (chunkComp.neighborEntities[SOUTH] != entt::null)
-            lightLevel = registry.get<ChunkComponent>(chunkComp.neighborEntities[SOUTH]).lightAt(x, y, CHUNK_WIDTH-1);
+            lightLevel = registry.get<ChunkComponent>(chunkComp.neighborEntities[SOUTH]).lightAt(x, y, CHUNK_WIDTH - 1);
         else
             lightLevel = 0xFF;
-    else if (dir == NORTH && z == (CHUNK_WIDTH - 1)) // z = CW is z = 0 in northern neighbor
+    else if (z == CHUNK_WIDTH) // z = CW is z = 0 in northern neighbor
         if (chunkComp.neighborEntities[NORTH] != entt::null)
             lightLevel = registry.get<ChunkComponent>(chunkComp.neighborEntities[NORTH]).lightAt(x, y, 0);
         else
             lightLevel = 0xFF;
-    else if (dir == DOWN && y == 0)
-        lightLevel = 0xFF; // lets just give it direct sunlight? player couldn't ever view
-    else if (dir == UP && y == (CHUNK_HEIGHT - 1))
-        lightLevel = 0xFF; // always direct sunlight
-    else // delta?ByDir[dir] and bounds checking
-        lightLevel = chunkComp.lightAt(x - deltaXByDir[dir], y - deltaYByDir[dir], z - deltaZByDir[dir]);
+    else
+        lightLevel = chunkComp.lightAt(x, y, z);
 
     return lightLevel;
 }
