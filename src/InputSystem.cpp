@@ -17,12 +17,7 @@ void InputSystem::update(entt::registry& registry, double deltaTime)
     // poll input events
     glfwPollEvents();
     // act based on last time step & current input
-    processInput(deltaTime);
-}
-
-void InputSystem::assign_window(GLFWwindow *w)
-{
-    window = w;
+    processKeyCallbacks(deltaTime);
 }
 
 void InputSystem::assign_window_callbacks()
@@ -53,26 +48,16 @@ void InputSystem::assign_window_callbacks()
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
-void InputSystem::processInput(double deltaTime)
+void InputSystem::processKeyCallbacks(double deltaTime)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    float cameraSpeed = 2.5 * deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera->MoveCamera(FORWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera->MoveCamera(BACKWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera->MoveCamera(LEFT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera->MoveCamera(RIGHT, deltaTime);
+    processMovement(deltaTime);
 
-    // toggle wireframe with shift
-    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    processDebug();
+
+//    processClick();
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -83,3 +68,31 @@ void InputSystem::framebuffer_size_callback(GLFWwindow* w, int width, int height
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
 }
+
+void InputSystem::processMovement(double deltaTime) {
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera->MoveCamera(FORWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camera->MoveCamera(BACKWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera->MoveCamera(LEFT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera->MoveCamera(RIGHT, deltaTime);
+}
+
+void InputSystem::processDebug() {
+    // toggle wireframe with shift
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
+
+//void InputSystem::processClick() {
+//    if (glfwGetKey(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+//        selectBlock() = AIR;
+//}
+
+//BlockType& InputSystem::selectBlock() {
+//
+//}

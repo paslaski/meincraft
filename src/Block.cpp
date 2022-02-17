@@ -20,3 +20,10 @@ BlockType sideLookup(BlockType block, Direction direction)
     else
         return block;
 };
+
+const std::array<BlockType, 6> sidesByType(BlockType type) {
+    if (sideEnumerator.contains(type))
+        return sideEnumerator[type];
+    else // default: block has same texture on every side
+        return { type, type, type, type, type, type };
+}
