@@ -11,6 +11,7 @@
 #include "Block.h"
 #include "Components.h"
 #include "Biome.h"
+#include "BlockPool.h"
 
 class ChunkGenerator {
 public:
@@ -23,11 +24,11 @@ public:
 private:
     const int m_Seed;
     entt::registry& m_Registry;
-
     std::map<std::pair<int, int>, entt::entity> chunkMap;
+    BlockPool& m_BlockPool;
 
     void createChunkComponent(const entt::entity& e_Chunk, glm::vec3 chunkPos);
-    std::vector<BlockType> createChunkBlocks(glm::vec3 chunkPos, std::vector<BiomeType>& biomeMap);
+    std::vector<const Block*> createChunkBlocks(glm::vec3 chunkPos, std::vector<BiomeType>& biomeMap);
     std::vector<int> generateBaseHeightmap(glm::vec3 chunkPos);
     std::vector<int> generateBiomeTopHeightmap(glm::vec3 chunkPos);
     // how to store biome? pointer? to singleton? enum?

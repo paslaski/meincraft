@@ -45,7 +45,7 @@ void ChunkMeshingSystem::constructMesh(entt::entity& chunk, entt::registry& regi
                 for (int face = 0; face < 6; face++) // 6 faces for each cube
                     for (int v = 0; v < 6; v++)
                     { // 6 vertices for each face
-                        if (blocks.blockAt(i, j, k) == AIR)
+                        if (blocks.blockAt(i, j, k)->typeOf() == AIR)
                             continue;
                         int dim = face % 3;
                         // follows UV coordinates of texture across 2D face surface
@@ -77,7 +77,7 @@ void ChunkMeshingSystem::constructMesh(entt::entity& chunk, entt::registry& regi
                                 static_cast<GLfloat>(pos.y + j + yVertOffset + yFaceOffset),
                                 static_cast<GLfloat>(pos.z + k + zVertOffset + zFaceOffset),
                                 uvCoords[v*2], uvCoords[v*2 + 1],
-                                static_cast<GLfloat>(sideLookup(blocks.blockAt(i, j, k), dir[face])),
+                                static_cast<GLfloat>(blocks.blockAt(i, j, k)->sideAtDir(dir[face])),
                                 0xFF
                         );
                     }
@@ -138,12 +138,11 @@ void ChunkMeshingSystem::greedyMesh(const entt::entity& chunk, entt::registry& r
                 {
                     // voxels behind + in front of face of interest
                     BlockType bFace = (curVox[dim] >= 0) ?
-                                      sideLookup(blocks.blockAt(curVox[0], curVox[1], curVox[2]), bDir) : AIR;
+                                      blocks.blockAt(curVox[0], curVox[1], curVox[2])->sideAtDir(bDir) : AIR;
                     BlockType fFace = (curVox[dim] < chunkDimSize[dim] - 1) ?
-                            sideLookup(blocks.blockAt(curVox[0] + dVec[0],
-                                                      curVox[1] + dVec[1],
-                                                      curVox[2] + dVec[2]), fDir)
-                                                                      : AIR;
+                                      blocks.blockAt(curVox[0] + dVec[0],
+                                                     curVox[1] + dVec[1],
+                                                     curVox[2] + dVec[2])->sideAtDir(fDir) : AIR;
 
                     // only draw face if EXACTLY one side is AIR
                     blockMask[curVox[u] + curVox[v] * chunkDimSize[u]] = ((bFace == AIR) != (fFace == AIR)) ?

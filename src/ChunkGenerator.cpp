@@ -6,14 +6,14 @@
 #include <queue>
 
 ChunkGenerator::ChunkGenerator(int seed, entt::registry& registry)
-    : m_Seed(seed), m_Registry(registry)
+    : m_Seed(seed), m_Registry(registry), m_BlockPool(BlockPool::getPoolInstance())
 {
     terrainBaseNoise.SetSeed(m_Seed);
     terrainBaseNoise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
     terrainBaseNoise.SetFractalType(FastNoiseLite::FractalType_FBm);
     terrainBaseNoise.SetFrequency(0.00522f);
     terrainBaseNoise.SetFractalOctaves(16);
-//    terrainBaseNoise.SetFractalGain();
+    // terrainBaseNoise.SetFractalGain();
     terrainBaseNoise.SetFractalLacunarity(1.0f);
 
     biomeTopNoise.SetSeed(m_Seed);
@@ -21,7 +21,7 @@ ChunkGenerator::ChunkGenerator(int seed, entt::registry& registry)
     biomeTopNoise.SetFractalType(FastNoiseLite::FractalType_FBm);
     biomeTopNoise.SetFrequency(0.00781f);
     biomeTopNoise.SetFractalOctaves(4);
-//    biomeTopNoise.SetFractalGain();
+    // biomeTopNoise.SetFractalGain();
     biomeTopNoise.SetFractalLacunarity(2.333f);
 
     temperatureNoise.SetSeed(m_Seed);
@@ -46,9 +46,9 @@ void ChunkGenerator::createChunkComponent(const entt::entity& e_Chunk, glm::vec3
     updateNeighbors(e_Chunk, chunkPos); // place entity in neighbors list of adjacent chunks
 }
 
-std::vector<BlockType> ChunkGenerator::createChunkBlocks(glm::vec3 chunkPos, std::vector<BiomeType>& biomeMap)
+std::vector<const Block*> ChunkGenerator::createChunkBlocks(glm::vec3 chunkPos, std::vector<BiomeType>& biomeMap)
 {
-    std::vector<BlockType> blocks(CHUNK_WIDTH*CHUNK_HEIGHT*CHUNK_WIDTH, AIR);
+    std::vector<const Block*> blocks(CHUNK_WIDTH*CHUNK_HEIGHT*CHUNK_WIDTH, m_BlockPool.getBlockPtr(AIR));
 
     std::vector<int> baseHeightmap = generateBaseHeightmap(chunkPos);
     std::vector<int> biomeTop = generateBiomeTopHeightmap(chunkPos);
@@ -57,12 +57,13 @@ std::vector<BlockType> ChunkGenerator::createChunkBlocks(glm::vec3 chunkPos, std
         for (int x = 0; x < CHUNK_WIDTH; x++) {
             int y = 0;
             for (; y < baseHeightmap[x + z * CHUNK_WIDTH]; y++) {
-                blocks[x + z * CHUNK_WIDTH + y * CHUNK_WIDTH * CHUNK_WIDTH] = STONE;
+                blocks[x + z * CHUNK_WIDTH + y * CHUNK_WIDTH * CHUNK_WIDTH] = m_BlockPool.getBlockPtr(STONE);
             }
 
             BlockType biomeBlock = biomeTopBlockLookup(biomeMap[x + z * CHUNK_WIDTH]);
             for (int topperHeight = 0; topperHeight < biomeTop[x + z * CHUNK_WIDTH]; topperHeight++) {
-                blocks[x + z * CHUNK_WIDTH + (y + topperHeight) * CHUNK_WIDTH * CHUNK_WIDTH] = biomeBlock;
+                blocks[x + z * CHUNK_WIDTH + (y + topperHeight) * CHUNK_WIDTH * CHUNK_WIDTH]
+                                                        = m_BlockPool.getBlockPtr(biomeBlock);
             }
         }
     }
@@ -212,9 +213,8 @@ void ChunkGenerator::createLightMap(ChunkComponent& chunkComp) {
         for (int z = 0; z < CHUNK_WIDTH; z++)
         {
             int y = CHUNK_HEIGHT - 1;
-            // TODO: include OR transparent to support transparent blocks
-            //
-            while (y >= 0 && chunkComp.blockAt(x, y, z) == AIR)
+            // propagates through transparent/air blocks
+            while (y >= 0 && chunkComp.blockAt(x, y, z)->isTransparent())
             {
                 chunkComp.setSunlight(x, y, z, 15); // max light value = 15
                 q.emplace(x, y, z, 15);
@@ -237,7 +237,7 @@ void ChunkGenerator::createLightMap(ChunkComponent& chunkComp) {
             if (neighborX < 0 || neighborX >= CHUNK_WIDTH || neighborY < 0 || neighborY >= CHUNK_WIDTH
                 || neighborZ < 0 || neighborZ >= CHUNK_HEIGHT)
                 continue; // out of bounds
-            if (chunkComp.blockAt(neighborX, neighborY, neighborZ) != AIR) // TODO: update for transparent blocks
+            if (not chunkComp.blockAt(neighborX, neighborY, neighborZ)->isTransparent())
                 continue; // no light within opaque blocks
 
             // flood fill adjacent blocks (if lower light level than flood)
@@ -250,4 +250,5 @@ void ChunkGenerator::createLightMap(ChunkComponent& chunkComp) {
     }
 
 }
+
 

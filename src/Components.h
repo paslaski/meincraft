@@ -24,11 +24,11 @@ struct ChunkComponent
     std::vector<entt::entity> neighborEntities {entt::null, entt::null, entt::null, entt::null};
 
     // include array of 8 bit enums corresponding to block types
-    std::vector<BlockType> blocks; // = std::vector<BlockType>(CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_WIDTH, AIR);
+    std::vector<const Block*> blocks; // = std::vector<BlockType>(CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_WIDTH, AIR);
     // classifies biome for each x,z index
     std::vector<BiomeType> biomeMap; // = std::vector<BiomeType>(CHUNK_WIDTH * CHUNK_WIDTH, GrassBiome);
 
-    BlockType blockAt(int x, int y, int z) {
+    const Block* blockAt(int x, int y, int z) const {
         return blocks[x + (z * CHUNK_WIDTH) + (y * CHUNK_WIDTH * CHUNK_WIDTH)];
     }
 
