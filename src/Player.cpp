@@ -20,3 +20,9 @@ glm::vec3 getPlayerPos(const entt::registry& registry)
     for (auto& e_Player : playerView)
         return registry.get<CameraComponent>(e_Player).camera->Position;
 }
+
+const Block* selectPlayerBlock(const entt::registry& registry)
+{
+
+    return nullptr;
+}
