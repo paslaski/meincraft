@@ -15,8 +15,6 @@ public:
     // make private after initial testing
     ChunkGenerator chunkGenerator;
 private:
-    std::pair<int, int> getPlayerChunkLocation(entt::registry& registry);
-
     // load all chunks that are <= $chunkLoadDistance chunks from player
     const int chunkLoadDistance = 2;
     // any chunks more than $chunkUnloadDistance from player should be removed from memory
