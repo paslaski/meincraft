@@ -15,7 +15,7 @@ void ChunkMeshingSystem::update(entt::registry& registry)
     for (const auto& chunk : chunkView)
     {
         // only have to update mesh if blocks have changed
-        if (registry.get<ChunkComponent>(chunk).hasChanged)
+        if (registry.get<ChunkComponent>(chunk).hasChanged())
             greedyMesh(chunk, registry);
     }
 }
@@ -84,7 +84,7 @@ void ChunkMeshingSystem::constructMesh(entt::entity& chunk, entt::registry& regi
 
     // note that new mesh was constructed based on changes
     // pretty sure this is an lvalue so this works
-    registry.get<ChunkComponent>(chunk).hasChanged = false;
+    registry.get<ChunkComponent>(chunk).markChangesResolved();
     registry.get<MeshComponent>(chunk).mustUpdateBuffer = true;
 }
 
@@ -166,7 +166,7 @@ void ChunkMeshingSystem::greedyMesh(const entt::entity& chunk, entt::registry& r
 //                    else // non-AIR block is at curVox, no need to step in dVec direction
 //                        x = curVox[0], y = curVox[1], z = curVox[2];
 //                    lightMask[curVox[u] + curVox[v] * chunkDimSize[u]]
-//                        = getLightLevel(registry, chunk, blocks, x, y, z, dirs[dim][(bFace == AIR)]);
+//                        = getLightLevel(m_Registry, chunk, blocks, x, y, z, dirs[dim][(bFace == AIR)]);
                 }
 
             // starts at -1 for first face, which is truly blockAt 0 relative to chunk --> inc reflects face position
@@ -245,7 +245,7 @@ void ChunkMeshingSystem::greedyMesh(const entt::entity& chunk, entt::registry& r
 
     // note that new mesh was constructed based on changes
     // pretty sure this is an lvalue so this works
-    registry.get<ChunkComponent>(chunk).hasChanged = false;
+    registry.get<ChunkComponent>(chunk).markChangesResolved();
     registry.get<MeshComponent>(chunk).mustUpdateBuffer = true;
 }
 
@@ -259,28 +259,28 @@ void ChunkMeshingSystem::appendQuad(glm::vec3 vStart, glm::vec3 vWidth, glm::vec
 //                                          BlockType block, int width, int height,
 //                                          Direction dir, std::vector<texArrayVertex>& vertices,
 //                                          std::vector<int>& curVox,
-//                                          entt::registry& registry, ChunkComponent& chunkComp)
+//                                          entt::m_Registry& m_Registry, ChunkComponent& chunkComp)
     BlockType blockSide = sideLookup(block, dir);
 //    GLubyte lightLevel;
 
 //    if (dir == WEST && curVox[0] == 0) // x = -1 in current chunk refers to x = CW-1 in western neighbor
 //        if (chunkComp.neighborEntities[WEST] != entt::null)
-//            lightLevel = registry.get<ChunkComponent>(chunkComp.neighborEntities[WEST]).lightAt(CHUNK_WIDTH-1, curVox[1], curVox[2]);
+//            lightLevel = m_Registry.get<ChunkComponent>(chunkComp.neighborEntities[WEST]).lightAt(CHUNK_WIDTH-1, curVox[1], curVox[2]);
 //        else
 //            lightLevel = 0xFF;
 //    else if (dir == EAST && curVox[0] == (CHUNK_WIDTH - 1)) // x = CW is x = 0 in eastern neighbor
 //        if (chunkComp.neighborEntities[EAST] != entt::null)
-//            lightLevel = registry.get<ChunkComponent>(chunkComp.neighborEntities[EAST]).lightAt(0, curVox[1], curVox[2]);
+//            lightLevel = m_Registry.get<ChunkComponent>(chunkComp.neighborEntities[EAST]).lightAt(0, curVox[1], curVox[2]);
 //        else
 //            lightLevel = 0xFF;
 //    else if (dir == SOUTH && curVox[2] == 0) // z = -1 is z = CW-1 in southern neighbor
 //        if (chunkComp.neighborEntities[SOUTH] != entt::null)
-//            lightLevel = registry.get<ChunkComponent>(chunkComp.neighborEntities[SOUTH]).lightAt(curVox[0], curVox[1], CHUNK_WIDTH-1);
+//            lightLevel = m_Registry.get<ChunkComponent>(chunkComp.neighborEntities[SOUTH]).lightAt(curVox[0], curVox[1], CHUNK_WIDTH-1);
 //        else
 //            lightLevel = 0xFF;
 //    else if (dir == NORTH && curVox[2] == (CHUNK_WIDTH - 1)) // z = CW is z = 0 in northern neighbor
 //        if (chunkComp.neighborEntities[NORTH] != entt::null)
-//            lightLevel = registry.get<ChunkComponent>(chunkComp.neighborEntities[NORTH]).lightAt(curVox[0], curVox[1], 0);
+//            lightLevel = m_Registry.get<ChunkComponent>(chunkComp.neighborEntities[NORTH]).lightAt(curVox[0], curVox[1], 0);
 //        else
 //            lightLevel = 0xFF;
 //    else if (dir == DOWN && curVox[1] == 0)

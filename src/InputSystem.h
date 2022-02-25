@@ -9,8 +9,8 @@ class Camera;
 
 class InputSystem {
 public:
-    InputSystem();
-    InputSystem(GLFWwindow* w, Camera* c);
+    InputSystem() = delete;
+    InputSystem(entt::registry& registry, GLFWwindow* w, Camera* c);
     ~InputSystem();
 
     void update(entt::registry& registry, double deltaTime);
@@ -19,6 +19,7 @@ public:
     Camera* get_camera() { return camera; }
 
 private:
+    entt::registry& m_Registry;
     GLFWwindow* window;
     Camera* camera;
 
@@ -28,7 +29,7 @@ private:
 
     void processMovement(double deltaTime);
     void processDebug();
-//    void processClick();
+    void processClick();
 //    BlockType& selectBlock();
 
 };

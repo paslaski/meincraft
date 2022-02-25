@@ -1,5 +1,4 @@
 
-//#include <entt/entt.hpp>
 #include <algorithm>
 #include <stdlib.h>
 
@@ -10,11 +9,9 @@
 #include "Components.h"
 #include "Player.h"
 
-ChunkLoaderSystem::ChunkLoaderSystem(entt::registry& registry)
-    : chunkGenerator(5271998, registry)
-{
-
-}
+ChunkLoaderSystem::ChunkLoaderSystem(entt::registry& registry, const int seed)
+    : m_Registry(registry), m_ChunkGenerator(seed, registry), m_ChunkMap(createChunkMap(registry))
+{}
 
 ChunkLoaderSystem::~ChunkLoaderSystem()
 {}
@@ -22,12 +19,12 @@ ChunkLoaderSystem::~ChunkLoaderSystem()
 void ChunkLoaderSystem::update(entt::registry& registry) {
     // TODO: maybe dont do this every frame? only if player leaves (cached) last chunk they were in
     // query for player location
-//    std::pair<int, int> playerChunk = getPlayerChunkLocation(registry);
-    std::pair<int, int> playerChunk = chunkOf(getPlayerPos(registry));
+    // std::pair<int, int> playerChunk = getPlayerChunkLocation(m_Registry);
+    std::pair<int, int> playerChunk = m_ChunkMap.chunkOf(getPlayerPos(registry));
 
     std::vector<bool> nearbyChunks((2*chunkLoadDistance+1)*(2*chunkLoadDistance+1), false);
 
-    // iterate through entities with chunkComponent in registry
+    // iterate through entities with chunkComponent in m_Registry
         // UNLOAD_DISTANCE: delete out-of-range
         // LOAD_DISTANCE: generate/load in-range if missing
     auto chunkView = registry.view<ChunkComponent>();
@@ -40,7 +37,7 @@ void ChunkLoaderSystem::update(entt::registry& registry) {
 
         if (chunkDist >= chunkUnloadDistance) // delete from memory
         {
-            chunkGenerator.destroyChunk(e_Chunk, chunkPos);
+            destroyChunk(e_Chunk, chunkPos);
         }
         if (chunkDist <= chunkLoadDistance) // mark as present
         {
@@ -59,9 +56,29 @@ void ChunkLoaderSystem::update(entt::registry& registry) {
             {
                 int chunkX = playerChunk.first + xOff * CHUNK_WIDTH;
                 int chunkZ = playerChunk.second + zOff * CHUNK_WIDTH;
-                chunkGenerator.generateChunk(glm::vec3(chunkX, 0, chunkZ));
+                glm::vec3 chunkPos = glm::vec3(chunkX, 0, chunkZ);
+
+                const entt::entity& e_Chunk = m_ChunkGenerator.generateChunk(chunkPos);
+                m_ChunkMap.insertChunk(e_Chunk, std::make_pair(chunkX, chunkZ));
             }
         }
     }
-    // TODO: destroy VBO in OpenGL from component destructors
 }
+
+void ChunkLoaderSystem::destroyChunk(const entt::entity& e_Chunk, glm::vec3 chunkPos)
+{
+    m_ChunkMap.deleteChunk(std::make_pair(chunkPos.x, chunkPos.z));
+
+    // TODO: save to disk to support changing environment
+    MeshComponent& meshComp = m_Registry.get<MeshComponent>(e_Chunk);
+    glDeleteBuffers(1, &meshComp.blockVBO); // can't include in MeshComp destructor (entt swap&pop double destruct)
+    m_Registry.destroy(e_Chunk); // delete entity from m_Registry
+}
+
+ChunkMapComponent& ChunkLoaderSystem::createChunkMap(entt::registry& registry)
+{
+    entt::entity e_ChunkMap = m_Registry.create();
+    m_Registry.emplace<ChunkMapComponent>(e_ChunkMap, registry);
+    return m_Registry.get<ChunkMapComponent>(e_ChunkMap);
+}
+

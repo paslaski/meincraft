@@ -4,8 +4,8 @@
 World::World()
 // must call createPlayer() before user camera can be passed to renderSystem & inputSystem
     : renderSystem((createPlayer(), retrievePlayerCamera())), registry(entt::registry()),
-      inputSystem(renderSystem.get_window(), renderSystem.get_camera()),
-      chunkLoaderSystem(registry),
+      inputSystem(registry, renderSystem.get_window(), renderSystem.get_camera()),
+      chunkLoaderSystem(registry, 5271998),
       chunkMeshingSystem(ChunkMeshingSystem())
 {
     inputSystem.assign_window_callbacks();
@@ -13,7 +13,7 @@ World::World()
     // create 5x5 chunk grid for testing
 //    for (int x = 0; x <= 16*10; x+=16)
 //        for (int z = 0; z <= 16*10; z+=16)
-//            chunkLoaderSystem.chunkGenerator.generateChunk(glm::vec3{x, 0, z});
+//            chunkLoaderSystem.m_ChunkGenerator.generateChunk(glm::vec3{x, 0, z});
 }
 
 World::~World()

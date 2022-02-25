@@ -2,11 +2,14 @@
 // probably only necessary if things like inventory implemented
 
 #include "InputSystem.h"
+#include "Player.h"
+#include "BlockPool.h"
+#include "Components.h"
 
-InputSystem::InputSystem() : window(NULL), camera(NULL)
-{}
+//InputSystem::InputSystem() : m_Registry(entt::m_Registry), window(NULL), camera(NULL)
+//{}
 
-InputSystem::InputSystem(GLFWwindow* w, Camera* c) : window(w), camera(c)
+InputSystem::InputSystem(entt::registry& registry, GLFWwindow* w, Camera* c) : m_Registry(registry), window(w), camera(c)
 {}
 
 InputSystem::~InputSystem()
@@ -57,7 +60,7 @@ void InputSystem::processKeyCallbacks(double deltaTime)
 
     processDebug();
 
-//    processClick();
+    processClick();
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -88,10 +91,22 @@ void InputSystem::processDebug() {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
-//void InputSystem::processClick() {
-//    if (glfwGetKey(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-//        selectBlock() = AIR;
-//}
+// if primary mouse button clicked, delete selected block
+void InputSystem::processClick() {
+//    if (glfwGetKey(window, GLFW_MOUSE_BUTTON_LEFT) != GLFW_PRESS)
+//        return;
+
+    std::cout << "clicked" << "\n";
+    auto [isSelected, selectedBlockPos] = selectPlayerBlock(m_Registry);
+    std::cout << "selected: " << isSelected << "\n";
+    if (not isSelected)
+        return;
+
+    entt::entity e_ChunkMap = m_Registry.view<ChunkMapComponent>().front();
+    ChunkMapComponent& chunkMap = m_Registry.get<ChunkMapComponent>(e_ChunkMap);
+    chunkMap.setBlock(selectedBlockPos, AIR);
+    std::cout << "deleted block" << "\n";
+}
 
 //BlockType& InputSystem::selectBlock() {
 //

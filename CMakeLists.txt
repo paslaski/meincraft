@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 # Add header file
 # Must update GLFW_H to directories containing headers
-set(GLFW_H /opt/homebrew/Cellar/glfw/3.3.5/include/) # GLFW
+set(GLFW_H /opt/homebrew/Cellar/glfw/3.3.6/include/) # GLFW
 set(GLAD_H ext/glad/include/)
 set(EXT_H /Users/robpaslaski/Documents/meincraft/ext/)
 
@@ -13,7 +13,7 @@ include_directories( ${GLFW_H} ${GLAD_H} ${EXT_H})
 
 # Add target link
 # Must update GLFW_LINK to dynamic library files
-set(GLFW_LINK /opt/homebrew/Cellar/glfw/3.3.5/lib/libglfw.3.dylib)
+set(GLFW_LINK /opt/homebrew/Cellar/glfw/3.3.6/lib/libglfw.3.dylib)
 link_libraries(${OPENGL} ${GLFW_LINK})
 
 # Execute compilation command

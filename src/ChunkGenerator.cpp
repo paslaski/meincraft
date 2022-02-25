@@ -37,19 +37,16 @@ ChunkGenerator::~ChunkGenerator()
 
 void ChunkGenerator::createChunkComponent(const entt::entity& e_Chunk, glm::vec3 chunkPos) {
     ChunkComponent chunkComp;
-    chunkComp.hasChanged = true; // toggle for mesh update/construction
     chunkComp.biomeMap = generateBiomeMap(chunkPos);
-    chunkComp.blocks = createChunkBlocks(chunkPos, chunkComp.biomeMap);
+    createChunkBlocks(chunkComp, chunkPos, chunkComp.biomeMap);
     createLightMap(chunkComp);
     m_Registry.emplace<ChunkComponent>(e_Chunk, chunkComp);
-
-    updateNeighbors(e_Chunk, chunkPos); // place entity in neighbors list of adjacent chunks
 }
 
-std::vector<const Block*> ChunkGenerator::createChunkBlocks(glm::vec3 chunkPos, std::vector<BiomeType>& biomeMap)
+void ChunkGenerator::createChunkBlocks(ChunkComponent& chunkComp, const glm::vec3& chunkPos,
+                                       const std::vector<BiomeType>& biomeMap)
 {
     std::vector<const Block*> blocks(CHUNK_WIDTH*CHUNK_HEIGHT*CHUNK_WIDTH, m_BlockPool.getBlockPtr(AIR));
-
     std::vector<int> baseHeightmap = generateBaseHeightmap(chunkPos);
     std::vector<int> biomeTop = generateBiomeTopHeightmap(chunkPos);
 
@@ -68,7 +65,7 @@ std::vector<const Block*> ChunkGenerator::createChunkBlocks(glm::vec3 chunkPos, 
         }
     }
 
-    return blocks;
+    chunkComp.setBlock(blocks);
 }
 
 BiomeType ChunkGenerator::biomeLookup(float temperature, float precipitation) {
@@ -126,8 +123,10 @@ std::vector<int> ChunkGenerator::generateBiomeTopHeightmap(glm::vec3 chunkPos)
     return biomeTopHeightmap;
 }
 
-void ChunkGenerator::generateChunk(glm::vec3 chunkPos) {
-    entt::entity e_Chunk = m_Registry.create();
+// TODO: multithreaded block/light + mesh creation
+// populate m_Registry with entity, create components of chunk, and return chunk entity
+const entt::entity ChunkGenerator::generateChunk(glm::vec3 chunkPos) {
+    const entt::entity e_Chunk = m_Registry.create();
     m_Registry.emplace<PositionComponent>(e_Chunk, chunkPos);
 
     // bool hasChanged, std::vector<BlockType> blocks
@@ -141,60 +140,7 @@ void ChunkGenerator::generateChunk(glm::vec3 chunkPos) {
     // std::move for OpenGL object
     m_Registry.emplace<MeshComponent>(e_Chunk, true, std::move(chunkVBO), chunkVertices);
 
-//    chunkMap[std::make_pair((int)chunkPos.x, (int)chunkPos.z)] = &e_Chunk;
-    chunkMap.insert({std::make_pair(chunkPos.x, chunkPos.z), e_Chunk});
-}
-
-void ChunkGenerator::destroyChunk(const entt::entity& e_Chunk, glm::vec3 chunkPos)
-{
-    std::map<std::pair<int, int>, entt::entity>::iterator iter = chunkMap.find(std::make_pair(chunkPos.x, chunkPos.z));
-    if (iter == chunkMap.end())
-    {
-        std::cout << "ChunkGenerator::WARNING - chunkMap entry deletion requested, but no entry found." << std::endl;
-        return;
-    }
-
-    chunkMap.erase(iter); // remove from lookup search tree
-    // TODO: save to disk to support changing environment
-    MeshComponent& meshComp = m_Registry.get<MeshComponent>(e_Chunk);
-    glDeleteBuffers(1, &meshComp.blockVBO); // can't simply include in MeshComp destructor (swap&pop double destruct)
-    updateNeighbors(entt::null, chunkPos); // update list of neighbors for surrounding chunk entites
-    m_Registry.destroy(e_Chunk); // delete entity from registry
-}
-
-void ChunkGenerator::updateNeighbors(const entt::entity& e_Chunk, glm::vec3 chunkPos)
-{
-    // accepts chunk being created or destroyed and its position
-    // updates surrounding chunks' neighbors array to reflect creation/destruction
-
-    // x defines WEST-EAST axis, z defines NORTH-SOUTH axis
-    // goes EAST --> update WEST, goes SOUTH --> update NORTH
-    // [CW, 0] [0, -CW] [-CW, 0] [0, CW]
-    std::vector<int> dirDist {CHUNK_WIDTH, 0, -CHUNK_WIDTH, 0, CHUNK_WIDTH};
-    std::vector<Direction> oppositeDirIdx {WEST, NORTH, EAST, SOUTH};
-    std::vector<Direction> dirIdx {EAST, SOUTH, WEST, NORTH};
-
-    // iterate over surrounding 4 chunks
-    for (int i = 0; i < 4; i++)
-    {
-        // identify x,z coordinates of neighbor chunk
-        std::pair<int, int> neighborPos(chunkPos.x + dirDist[i], chunkPos.z + dirDist[i + 1]);
-        Direction dirTowardUpdatedChunk = oppositeDirIdx[i]; // e_Chunk is in this direction
-        Direction dirTowardNeighbor = dirIdx[i];
-        // check if neighbor chunk exists in memory
-        auto chunkIter = chunkMap.find(neighborPos);
-        if (chunkIter == chunkMap.end()) // skip iteration if no neighbor exists in memory
-            continue;
-
-        // update neighbor array corresponding to neighboring chunk entity
-        entt::entity e_AdjChunk = chunkIter->second;
-        std::vector<entt::entity>& adjChunkNeighbors = m_Registry.get<ChunkComponent>(e_AdjChunk).neighborEntities;
-        adjChunkNeighbors[dirTowardUpdatedChunk] = e_Chunk;
-//        std::cout << (m_Registry.get<ChunkComponent>(e_AdjChunk).neighborEntities[dirTowardUpdatedChunk]==entt::null) << std::endl;
-        // update neighbor array of current chunk entity
-        if (e_Chunk != entt::null)
-            m_Registry.get<ChunkComponent>(e_Chunk).neighborEntities[dirTowardNeighbor] = e_AdjChunk;
-    }
+    return e_Chunk;
 }
 
 void ChunkGenerator::createLightMap(ChunkComponent& chunkComp) {

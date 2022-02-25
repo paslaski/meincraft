@@ -18,24 +18,21 @@ public:
     ChunkGenerator(int seed, entt::registry& registry);
     ~ChunkGenerator();
 
-    void generateChunk(glm::vec3 chunkPos);
-    void destroyChunk(const entt::entity& e_Chunk, glm::vec3 chunkPos);
+    const entt::entity generateChunk(glm::vec3 chunkPos);
 
 private:
     const int m_Seed;
     entt::registry& m_Registry;
-    std::map<std::pair<int, int>, entt::entity> chunkMap;
-    BlockPool& m_BlockPool;
+    const BlockPool& m_BlockPool;
 
     void createChunkComponent(const entt::entity& e_Chunk, glm::vec3 chunkPos);
-    std::vector<const Block*> createChunkBlocks(glm::vec3 chunkPos, std::vector<BiomeType>& biomeMap);
+    void createChunkBlocks(ChunkComponent& chunkComp, const glm::vec3& chunkPos, const std::vector<BiomeType>& biomeMap);
     std::vector<int> generateBaseHeightmap(glm::vec3 chunkPos);
     std::vector<int> generateBiomeTopHeightmap(glm::vec3 chunkPos);
     // how to store biome? pointer? to singleton? enum?
     std::vector<BiomeType> generateBiomeMap(glm::vec3 chunkPos);
     BiomeType biomeLookup(float temperature, float precipitation);
 //    void generateFlora(std::vector<BlockType> blocks);
-    void updateNeighbors(const entt::entity& e_Chunk, glm::vec3 chunkPos);
     void createLightMap(ChunkComponent& chunkComp);
 
     FastNoiseLite terrainBaseNoise;
