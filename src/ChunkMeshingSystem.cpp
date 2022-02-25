@@ -1,6 +1,7 @@
 
 #include "ChunkMeshingSystem.h"
 #include <iostream>
+#include "ChunkGenerator.h"
 
 ChunkMeshingSystem::ChunkMeshingSystem()
 {}
@@ -16,8 +17,10 @@ void ChunkMeshingSystem::update(entt::registry& registry)
     {
         // only have to update mesh if blocks have changed
         if (registry.get<ChunkComponent>(chunk).hasChanged())
-            constructMesh(chunk, registry);
-//            greedyMesh(chunk, registry);
+            ChunkGenerator::updateLightMap(registry.get<ChunkComponent>(chunk));
+            greedyMesh(chunk, registry); // strategy? swap for debug
+            // constructMesh(chunk, registry);
+
     }
 }
 
@@ -256,40 +259,8 @@ void ChunkMeshingSystem::appendQuad(glm::vec3 vStart, glm::vec3 vWidth, glm::vec
                               Direction dir, std::vector<texArrayVertex>& vertices,
                               uint8_t lightLevel)
                               {
-//                                  (glm::vec3 vStart, glm::vec3 vWidth, glm::vec3 vHeight, glm::vec3 vEnd,
-//                                          BlockType block, int width, int height,
-//                                          Direction dir, std::vector<texArrayVertex>& vertices,
-//                                          std::vector<int>& curVox,
-//                                          entt::m_Registry& m_Registry, ChunkComponent& chunkComp)
-    BlockType blockSide = sideLookup(block, dir);
-//    GLubyte lightLevel;
 
-//    if (dir == WEST && curVox[0] == 0) // x = -1 in current chunk refers to x = CW-1 in western neighbor
-//        if (chunkComp.neighborEntities[WEST] != entt::null)
-//            lightLevel = m_Registry.get<ChunkComponent>(chunkComp.neighborEntities[WEST]).lightAt(CHUNK_WIDTH-1, curVox[1], curVox[2]);
-//        else
-//            lightLevel = 0xFF;
-//    else if (dir == EAST && curVox[0] == (CHUNK_WIDTH - 1)) // x = CW is x = 0 in eastern neighbor
-//        if (chunkComp.neighborEntities[EAST] != entt::null)
-//            lightLevel = m_Registry.get<ChunkComponent>(chunkComp.neighborEntities[EAST]).lightAt(0, curVox[1], curVox[2]);
-//        else
-//            lightLevel = 0xFF;
-//    else if (dir == SOUTH && curVox[2] == 0) // z = -1 is z = CW-1 in southern neighbor
-//        if (chunkComp.neighborEntities[SOUTH] != entt::null)
-//            lightLevel = m_Registry.get<ChunkComponent>(chunkComp.neighborEntities[SOUTH]).lightAt(curVox[0], curVox[1], CHUNK_WIDTH-1);
-//        else
-//            lightLevel = 0xFF;
-//    else if (dir == NORTH && curVox[2] == (CHUNK_WIDTH - 1)) // z = CW is z = 0 in northern neighbor
-//        if (chunkComp.neighborEntities[NORTH] != entt::null)
-//            lightLevel = m_Registry.get<ChunkComponent>(chunkComp.neighborEntities[NORTH]).lightAt(curVox[0], curVox[1], 0);
-//        else
-//            lightLevel = 0xFF;
-//    else if (dir == DOWN && curVox[1] == 0)
-//        lightLevel = 0xFF; // lets just give it direct sunlight? player couldn't ever view
-//    else if (dir == UP && curVox[1] == (CHUNK_HEIGHT - 1))
-//        lightLevel = 0xFF; // always direct sunlight
-//    else // delta?ByDir[dir] and bounds checking
-//        lightLevel = chunkComp.lightAt(curVox[0], curVox[1], curVox[2]);
+    BlockType blockSide = sideLookup(block, dir);
 
     if (dir == WEST || dir == EAST)
     {

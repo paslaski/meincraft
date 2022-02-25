@@ -39,7 +39,7 @@ void ChunkGenerator::createChunkComponent(const entt::entity& e_Chunk, glm::vec3
     ChunkComponent chunkComp;
     chunkComp.biomeMap = generateBiomeMap(chunkPos);
     createChunkBlocks(chunkComp, chunkPos, chunkComp.biomeMap);
-    createLightMap(chunkComp);
+    updateLightMap(chunkComp);
     m_Registry.emplace<ChunkComponent>(e_Chunk, chunkComp);
 }
 
@@ -143,7 +143,7 @@ const entt::entity ChunkGenerator::generateChunk(glm::vec3 chunkPos) {
     return e_Chunk;
 }
 
-void ChunkGenerator::createLightMap(ChunkComponent& chunkComp) {
+void ChunkGenerator::updateLightMap(ChunkComponent& chunkComp) {
     // TODO: include entt::entity and update bounds checking to support cross-voxel light flooding
     struct lightNode {
         int x, y, z, lightLevel;
@@ -151,6 +151,7 @@ void ChunkGenerator::createLightMap(ChunkComponent& chunkComp) {
             : x(x), y(y), z(z), lightLevel(lightLevel) {}
     };
 
+    chunkComp.clearLightMap();
     std::queue<lightNode> q;
 
     // flood fill sunlight from the top of the chunk
@@ -179,16 +180,16 @@ void ChunkGenerator::createLightMap(ChunkComponent& chunkComp) {
             int neighborX = curNode.x + deltaXByDir[dir]; // coordinates of adjacent block
             int neighborY = curNode.y + deltaYByDir[dir];
             int neighborZ = curNode.z + deltaZByDir[dir];
-
-            if (neighborX < 0 || neighborX >= CHUNK_WIDTH || neighborY < 0 || neighborY >= CHUNK_WIDTH
-                || neighborZ < 0 || neighborZ >= CHUNK_HEIGHT)
+            if (neighborX < 0 || neighborX >= CHUNK_WIDTH || neighborY < 0 || neighborY >= CHUNK_HEIGHT
+                || neighborZ < 0 || neighborZ >= CHUNK_WIDTH)
                 continue; // out of bounds
             if (not chunkComp.blockAt(neighborX, neighborY, neighborZ)->isTransparent())
                 continue; // no light within opaque blocks
 
             // flood fill adjacent blocks (if lower light level than flood)
+
             if (chunkComp.getSunlight(neighborX, neighborY, neighborZ) < curNode.lightLevel - 1) {
-                chunkComp.setSunlight(neighborX, neighborY, neighborZ, curNode.lightLevel - 1);
+                chunkComp.setSunlight(neighborX, neighborY, neighborZ, curNode.lightLevel - 1); // !!!!!????? print idk
                 q.emplace(neighborX, neighborY, neighborZ, curNode.lightLevel - 1);
             }
         }

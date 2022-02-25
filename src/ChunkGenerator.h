@@ -19,6 +19,7 @@ public:
     ~ChunkGenerator();
 
     const entt::entity generateChunk(glm::vec3 chunkPos);
+    static void updateLightMap(ChunkComponent& chunkComp);
 
 private:
     const int m_Seed;
@@ -33,7 +34,6 @@ private:
     std::vector<BiomeType> generateBiomeMap(glm::vec3 chunkPos);
     BiomeType biomeLookup(float temperature, float precipitation);
 //    void generateFlora(std::vector<BlockType> blocks);
-    void createLightMap(ChunkComponent& chunkComp);
 
     FastNoiseLite terrainBaseNoise;
     FastNoiseLite biomeTopNoise;

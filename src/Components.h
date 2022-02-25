@@ -64,6 +64,9 @@ public:
     // sunlight corresponds to the bits 0000XXXX
     // torchlight corresponds to bits XXXX0000
     std::vector<uint8_t> lightMap = std::vector<uint8_t>(CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_WIDTH, 0);
+    void clearLightMap() {
+        memset(&lightMap[0], static_cast<uint8_t>(0), lightMap.size());
+    }
     int getSunlight(int x, int y, int z) {
         return lightMap[x + (z * CHUNK_WIDTH) + (y * CHUNK_WIDTH * CHUNK_WIDTH)] & 0xF;
     }
