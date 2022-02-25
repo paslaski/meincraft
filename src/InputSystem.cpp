@@ -44,9 +44,15 @@ void InputSystem::assign_window_callbacks()
         static_cast<InputSystem*>(glfwGetWindowUserPointer(w))->get_camera()->ProcessMouseScroll(yoff);
     };
 
+    auto pass_mouse_button_callback = [](GLFWwindow* w, int button, int action, int mods)
+    {
+        static_cast<InputSystem*>(glfwGetWindowUserPointer(w))->processClick();
+    };
+
     glfwSetFramebufferSizeCallback(window, pass_frame_buffer_callback);
     glfwSetCursorPosCallback(window, pass_mouse_callback);
     glfwSetScrollCallback(window, pass_scroll_callback);
+    glfwSetMouseButtonCallback(window, pass_mouse_button_callback);
 }
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
@@ -60,7 +66,7 @@ void InputSystem::processKeyCallbacks(double deltaTime)
 
     processDebug();
 
-    processClick();
+//    processClick();
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -93,8 +99,10 @@ void InputSystem::processDebug() {
 
 // if primary mouse button clicked, delete selected block
 void InputSystem::processClick() {
-//    if (glfwGetKey(window, GLFW_MOUSE_BUTTON_LEFT) != GLFW_PRESS)
-//        return;
+    if ((glfwGetKey(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS))
+        std::cout << "pressed!!" << "\n";
+    if (glfwGetKey(window, GLFW_MOUSE_BUTTON_LEFT) != GLFW_PRESS)
+        return;
 
     auto [isSelected, selectedBlockPos] = selectPlayerBlock(m_Registry);
     if (not isSelected)
