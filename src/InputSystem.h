@@ -30,6 +30,5 @@ private:
     void processMovement(double deltaTime);
     void processDebug();
     void processClick();
-//    BlockType& selectBlock();
 
 };

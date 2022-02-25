@@ -96,18 +96,11 @@ void InputSystem::processClick() {
 //    if (glfwGetKey(window, GLFW_MOUSE_BUTTON_LEFT) != GLFW_PRESS)
 //        return;
 
-    std::cout << "clicked" << "\n";
     auto [isSelected, selectedBlockPos] = selectPlayerBlock(m_Registry);
-    std::cout << "selected: " << isSelected << "\n";
     if (not isSelected)
         return;
 
     entt::entity e_ChunkMap = m_Registry.view<ChunkMapComponent>().front();
     ChunkMapComponent& chunkMap = m_Registry.get<ChunkMapComponent>(e_ChunkMap);
     chunkMap.setBlock(selectedBlockPos, AIR);
-    std::cout << "deleted block" << "\n";
 }
-
-//BlockType& InputSystem::selectBlock() {
-//
-//}

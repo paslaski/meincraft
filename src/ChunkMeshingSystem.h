@@ -15,8 +15,8 @@ public:
 
     void update(entt::registry& registry);
 private:
-    void constructMesh(entt::entity& chunk, entt::registry& registry);
-    void greedyMesh(const entt::entity& chunk, entt::registry& registry);
+    void constructMesh(entt::entity chunk, entt::registry& registry);
+    void greedyMesh(entt::entity chunk, entt::registry& registry);
     void appendQuad(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 v4, BlockType block,
                          int width, int height,
                          Direction dir, std::vector<texArrayVertex>& vertices,

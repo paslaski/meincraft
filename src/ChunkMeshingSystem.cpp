@@ -16,11 +16,12 @@ void ChunkMeshingSystem::update(entt::registry& registry)
     {
         // only have to update mesh if blocks have changed
         if (registry.get<ChunkComponent>(chunk).hasChanged())
-            greedyMesh(chunk, registry);
+            constructMesh(chunk, registry);
+//            greedyMesh(chunk, registry);
     }
 }
 
-void ChunkMeshingSystem::constructMesh(entt::entity& chunk, entt::registry& registry)
+void ChunkMeshingSystem::constructMesh(entt::entity chunk, entt::registry& registry)
 {
 //    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     // retrieve refs to block data & vertex storage
@@ -88,7 +89,7 @@ void ChunkMeshingSystem::constructMesh(entt::entity& chunk, entt::registry& regi
     registry.get<MeshComponent>(chunk).mustUpdateBuffer = true;
 }
 
-void ChunkMeshingSystem::greedyMesh(const entt::entity& chunk, entt::registry& registry)
+void ChunkMeshingSystem::greedyMesh(entt::entity chunk, entt::registry& registry)
 {
     // // wireframes for debugging
 //     glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );

@@ -79,7 +79,7 @@ std::tuple<const bool, const glm::ivec3> selectPlayerBlock(entt::registry& regis
         { // tMax.z is minimum
             origin.z += step.z;
             tMax.z += tDelta.z;
-            if (origin.z >= CHUNK_HEIGHT)
+            if (origin.z < 0 || origin.z >= CHUNK_HEIGHT)
                 return {false, {-1, -1, -1}};
         }
 
