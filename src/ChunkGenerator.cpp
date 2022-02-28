@@ -5,8 +5,8 @@
 #include <iostream>
 #include <queue>
 
-ChunkGenerator::ChunkGenerator(int seed, entt::registry& registry)
-    : m_Seed(seed), m_Registry(registry), m_BlockPool(BlockPool::getPoolInstance())
+ChunkGenerator::ChunkGenerator(int seed, entt::registry& registry, ChunkMapComponent& chunkMap)
+    : m_Seed(seed), m_Registry(registry), m_BlockPool(BlockPool::getPoolInstance()), m_ChunkMap(chunkMap)
 {
     terrainBaseNoise.SetSeed(m_Seed);
     terrainBaseNoise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
@@ -36,11 +36,29 @@ ChunkGenerator::~ChunkGenerator()
 {}
 
 void ChunkGenerator::createChunkComponent(const entt::entity& e_Chunk, glm::vec3 chunkPos) {
-    ChunkComponent chunkComp;
+    ChunkComponent& chunkComp = m_Registry.get<ChunkComponent>(e_Chunk);
     chunkComp.biomeMap = generateBiomeMap(chunkPos);
     createChunkBlocks(chunkComp, chunkPos, chunkComp.biomeMap);
     updateLightMap(chunkComp);
+}
+
+// creates entity and attaches components (note: does not populate component data)
+const entt::entity ChunkGenerator::generateChunkEntity(const glm::vec3& chunkPos)
+{
+    const entt::entity e_Chunk = m_Registry.create();
+    m_Registry.emplace<PositionComponent>(e_Chunk, chunkPos);
+
+    unsigned int chunkVBO;
+    glGenBuffers(1, &chunkVBO);
+
+    std::vector<texArrayVertex> chunkVertices; // uninitialized, marked for update
+    // std::move required for OpenGL ownership
+    m_Registry.emplace<MeshComponent>(e_Chunk, true, std::move(chunkVBO), chunkVertices);
+    ChunkComponent chunkComp;
     m_Registry.emplace<ChunkComponent>(e_Chunk, chunkComp);
+    m_ChunkMap.insertChunk(e_Chunk, std::make_pair(chunkPos.x, chunkPos.z));
+
+    return e_Chunk;
 }
 
 void ChunkGenerator::createChunkBlocks(ChunkComponent& chunkComp, const glm::vec3& chunkPos,
@@ -121,26 +139,6 @@ std::vector<int> ChunkGenerator::generateBiomeTopHeightmap(glm::vec3 chunkPos)
                     scale(biomeTopNoise.GetNoise((float) (x + chunkPos.x), (float) (z + chunkPos.z)));
 
     return biomeTopHeightmap;
-}
-
-// TODO: multithreaded block/light + mesh creation
-// populate m_Registry with entity, create components of chunk, and return chunk entity
-const entt::entity ChunkGenerator::generateChunk(glm::vec3 chunkPos) {
-    const entt::entity e_Chunk = m_Registry.create();
-    m_Registry.emplace<PositionComponent>(e_Chunk, chunkPos);
-
-    // bool hasChanged, std::vector<BlockType> blocks
-    createChunkComponent(e_Chunk, chunkPos);
-
-    // create mesh component & associated OpenGL buffer object (uncopyable)
-    unsigned int chunkVBO;
-    glGenBuffers(1, &chunkVBO); // future: ensure gen buffer when loaded off disk/from compressed
-    std::vector<texArrayVertex> chunkVertices; // uninitialized, marked for update
-    // bool mustUpdateBuffer, unsigned int blockVBO, std::vector<texArrayVertex> chunkVertices;
-    // std::move for OpenGL object
-    m_Registry.emplace<MeshComponent>(e_Chunk, true, std::move(chunkVBO), chunkVertices);
-
-    return e_Chunk;
 }
 
 void ChunkGenerator::updateLightMap(ChunkComponent& chunkComp) {

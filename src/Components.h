@@ -19,7 +19,7 @@ struct PositionComponent
 struct ChunkComponent
 {
 private:
-    bool changed; // useful to determine if new meshes should be generated
+    bool changed = false; // useful to determine if new meshes should be generated
     std::vector<const Block*> blocks; // = std::vector<BlockType>(CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_WIDTH, AIR);
 
 public:
@@ -249,6 +249,7 @@ public:
             // update neighbor array corresponding to neighboring chunk entity
             ChunkMapComponent& self = *this;
             entt::entity e_AdjChunk = self[neighborPos];
+            // check if has component..? should now but same crash
             std::vector<entt::entity>& adjChunkNeighbors = m_Registry.get<ChunkComponent>(e_AdjChunk).neighborEntities;
             adjChunkNeighbors[dirTowardUpdatedChunk] = e_Chunk;
 

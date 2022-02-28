@@ -15,18 +15,20 @@
 
 class ChunkGenerator {
 public:
-    ChunkGenerator(int seed, entt::registry& registry);
+    ChunkGenerator(int seed, entt::registry& registry, ChunkMapComponent& chunkMap);
     ~ChunkGenerator();
 
-    const entt::entity generateChunk(glm::vec3 chunkPos);
+    const entt::entity generateChunkEntity(const glm::vec3& chunkPos);
+    void generateChunk(glm::vec3 chunkPos);
     static void updateLightMap(ChunkComponent& chunkComp);
+    void createChunkComponent(const entt::entity& e_Chunk, glm::vec3 chunkPos);
 
 private:
     const int m_Seed;
     entt::registry& m_Registry;
     const BlockPool& m_BlockPool;
+    ChunkMapComponent& m_ChunkMap;
 
-    void createChunkComponent(const entt::entity& e_Chunk, glm::vec3 chunkPos);
     void createChunkBlocks(ChunkComponent& chunkComp, const glm::vec3& chunkPos, const std::vector<BiomeType>& biomeMap);
     std::vector<int> generateBaseHeightmap(glm::vec3 chunkPos);
     std::vector<int> generateBiomeTopHeightmap(glm::vec3 chunkPos);

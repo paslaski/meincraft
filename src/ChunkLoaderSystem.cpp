@@ -1,6 +1,7 @@
 
 #include <algorithm>
 #include <stdlib.h>
+#include <thread>
 
 #include "ChunkLoaderSystem.h"
 
@@ -10,7 +11,7 @@
 #include "Player.h"
 
 ChunkLoaderSystem::ChunkLoaderSystem(entt::registry& registry, const int seed)
-    : m_Registry(registry), m_ChunkGenerator(seed, registry), m_ChunkMap(createChunkMap(registry))
+    : m_Registry(registry), m_ChunkMap(createChunkMap(registry)), m_ChunkGenerator(seed, registry, m_ChunkMap)
 {}
 
 ChunkLoaderSystem::~ChunkLoaderSystem()
@@ -47,22 +48,26 @@ void ChunkLoaderSystem::update(entt::registry& registry) {
     }
 
     // create any chunks missing within chunkLoadDistance
+    std::vector<std::thread> chunkGenThreads;
     for (int zOff = -chunkLoadDistance; zOff <= chunkLoadDistance; zOff++)
     {
         for (int xOff = -chunkLoadDistance; xOff <= chunkLoadDistance; xOff++)
         {
             // xOff + zOff*loadedChunkBoxSideLength but offset to avoid negative x/z distances
-            if (!nearbyChunks[(xOff+chunkLoadDistance) + (zOff+chunkLoadDistance)*(2*chunkLoadDistance+1)])
+            if (not nearbyChunks[(xOff+chunkLoadDistance) + (zOff+chunkLoadDistance)*(2*chunkLoadDistance+1)])
             {
                 int chunkX = playerChunk.first + xOff * CHUNK_WIDTH;
                 int chunkZ = playerChunk.second + zOff * CHUNK_WIDTH;
                 glm::vec3 chunkPos = glm::vec3(chunkX, 0, chunkZ);
 
-                const entt::entity& e_Chunk = m_ChunkGenerator.generateChunk(chunkPos);
-                m_ChunkMap.insertChunk(e_Chunk, std::make_pair(chunkX, chunkZ));
+                const entt::entity e_Chunk = m_ChunkGenerator.generateChunkEntity(chunkPos);
+                chunkGenThreads.emplace_back(&ChunkGenerator::createChunkComponent, &m_ChunkGenerator, e_Chunk, chunkPos);
             }
         }
     }
+    // safe for now: wait for all threads to complete before advancing to next system
+    for (std::thread& t : chunkGenThreads)
+        t.join();
 }
 
 void ChunkLoaderSystem::destroyChunk(const entt::entity& e_Chunk, glm::vec3 chunkPos)

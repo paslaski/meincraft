@@ -17,8 +17,8 @@ public:
 
 private:
     entt::registry& m_Registry;
-    ChunkGenerator m_ChunkGenerator;
     ChunkMapComponent& m_ChunkMap;
+    ChunkGenerator m_ChunkGenerator;
 
     // refactor + expand: loadChunk (generate vs. disk), unloadChunk
     void destroyChunk(const entt::entity& e_Chunk, glm::vec3 chunkPos);
