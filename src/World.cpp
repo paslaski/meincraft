@@ -5,8 +5,8 @@ World::World()
 // must call createPlayer() before user camera can be passed to renderSystem & inputSystem
     : renderSystem((createPlayer(), retrievePlayerCamera())), registry(entt::registry()),
       inputSystem(registry, renderSystem.get_window(), renderSystem.get_camera()),
-      chunkLoaderSystem(registry, 5271998),
-      chunkMeshingSystem(ChunkMeshingSystem())
+      chunkMeshingSystem(ChunkMeshingSystem()),
+      chunkLoaderSystem(registry, 5271998)
 {
     inputSystem.assign_window_callbacks();
 

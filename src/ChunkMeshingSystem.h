@@ -14,6 +14,7 @@ public:
     ~ChunkMeshingSystem();
 
     void update(entt::registry& registry);
+    void initNewChunk(const entt::entity& e_Chunk, entt::registry& registry);
 private:
     void constructMesh(entt::entity chunk, entt::registry& registry);
     void greedyMesh(entt::entity chunk, entt::registry& registry);

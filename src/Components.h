@@ -2,6 +2,7 @@
 
 #include <string>
 #include <memory>
+#include <shared_mutex>
 #include <glm/vec3.hpp>
 #include "Block.h"
 #include "Chunk.h"
@@ -90,7 +91,9 @@ public:
 struct MeshComponent // can add more VBOs for different rendering processes
 {
     // shader, texture, VAO stored in RenderSystem for each VBO
-    bool mustUpdateBuffer; // if vertex data different, must update buffer for GPU
+    bool initialized = false; // can we construct meshes on another thread? only if uninitialized, else need next frame
+    bool startedInit = false;
+    bool mustUpdateBuffer = true; // if vertex data different, must update buffer for GPU
     unsigned int blockVBO; // VBO for block
     std::vector<texArrayVertex> chunkVertices; // vertex data
 

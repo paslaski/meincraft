@@ -25,8 +25,8 @@ private:
 
     RenderSystem renderSystem;
     InputSystem inputSystem;
-    ChunkLoaderSystem chunkLoaderSystem;
     ChunkMeshingSystem chunkMeshingSystem;
+    ChunkLoaderSystem chunkLoaderSystem;
 
     // timing
     float deltaTime = 0.0f;	// time between current frame and last frame

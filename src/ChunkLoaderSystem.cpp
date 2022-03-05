@@ -11,7 +11,8 @@
 #include "Player.h"
 
 ChunkLoaderSystem::ChunkLoaderSystem(entt::registry& registry, const int seed)
-    : m_Registry(registry), m_ChunkMap(createChunkMap(registry)), m_ChunkGenerator(seed, registry, m_ChunkMap)
+    : m_Registry(registry), m_ChunkMap(createChunkMap(registry)),
+    m_ChunkGenerator(seed, registry, m_ChunkMap)
 {}
 
 ChunkLoaderSystem::~ChunkLoaderSystem()

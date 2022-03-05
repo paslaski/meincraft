@@ -4,7 +4,7 @@
 #include <utility>
 #include "ChunkGenerator.h"
 
-
+class ChunkMeshingSystem;
 
 class ChunkLoaderSystem {
 public:
@@ -25,7 +25,7 @@ private:
     ChunkMapComponent& createChunkMap(entt::registry& registry);
 
     // load all chunks that are <= $chunkLoadDistance chunks from player
-    const int chunkLoadDistance = 2;
+    const int chunkLoadDistance = 10;
     // any chunks more than $chunkUnloadDistance from player should be removed from memory
-    const int chunkUnloadDistance = 3;
+    const int chunkUnloadDistance = 12;
 };

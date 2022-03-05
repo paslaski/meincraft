@@ -2,6 +2,7 @@
 #include "ChunkMeshingSystem.h"
 #include <iostream>
 #include "ChunkGenerator.h"
+#include <thread>
 
 ChunkMeshingSystem::ChunkMeshingSystem()
 {}
@@ -12,21 +13,42 @@ ChunkMeshingSystem::~ChunkMeshingSystem()
 void ChunkMeshingSystem::update(entt::registry& registry)
 {
     // view all chunks (data stored in BlockComponents)
+    std::vector<std::thread> meshUpdateThreads;
     auto chunkView = registry.view<ChunkComponent>();
-    for (const auto& chunk : chunkView)
+    for (const auto& e_Chunk : chunkView)
     {
-        // only have to update mesh if blocks have changed
-        if (registry.get<ChunkComponent>(chunk).hasChanged())
-            ChunkGenerator::updateLightMap(registry.get<ChunkComponent>(chunk));
-            greedyMesh(chunk, registry); // strategy? swap for debug
-            // constructMesh(chunk, registry);
+//        // if newly loaded chunk not yet initialized, doesn't require mesh update for next frame
+//        MeshComponent& meshComp = registry.get<MeshComponent>(e_Chunk);
+//        if (not meshComp.initialized && not meshComp.startedInit) {
+//            meshComp.startedInit = true;
+//            std::thread initMeshThread(&ChunkMeshingSystem::initNewChunk, this, e_Chunk, std::ref(registry));
+//            initMeshThread.detach();
+//            continue;
+//        }
 
+        // only have to update mesh for next frame if blocks have changed
+        if (chunkView.get<ChunkComponent>(e_Chunk).hasChanged()) {
+            meshUpdateThreads.emplace_back([&registry, &e_Chunk, this]() {
+                ChunkGenerator::updateLightMap(registry.get<ChunkComponent>(e_Chunk));
+                greedyMesh(e_Chunk, registry); // strategy? swap for debug
+                // constructMesh(chunk, registry);
+            });
+        }
     }
+    for (std::thread& t : meshUpdateThreads)
+        t.join();
+}
+
+void ChunkMeshingSystem::initNewChunk(const entt::entity& e_Chunk, entt::registry& registry)
+{
+    ChunkComponent& chunkComp = registry.get<ChunkComponent>(e_Chunk);
+//    ChunkGenerator::updateLightMap(chunkComp); // must be done before meshing
+    greedyMesh(e_Chunk, registry);
+    registry.get<MeshComponent>(e_Chunk).initialized = true; // note mesh has been initialized
 }
 
 void ChunkMeshingSystem::constructMesh(entt::entity chunk, entt::registry& registry)
 {
-//    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     // retrieve refs to block data & vertex storage
     ChunkComponent& blocks = registry.get<ChunkComponent>(chunk);
     std::vector<texArrayVertex>& vertices = registry.get<MeshComponent>(chunk).chunkVertices;
@@ -94,8 +116,6 @@ void ChunkMeshingSystem::constructMesh(entt::entity chunk, entt::registry& regis
 
 void ChunkMeshingSystem::greedyMesh(entt::entity chunk, entt::registry& registry)
 {
-    // // wireframes for debugging
-//     glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     // retrieve refs to block data & vertex storage
     ChunkComponent& blocks = registry.get<ChunkComponent>(chunk);
     std::vector<texArrayVertex>& vertices = registry.get<MeshComponent>(chunk).chunkVertices;
@@ -164,13 +184,6 @@ void ChunkMeshingSystem::greedyMesh(entt::entity chunk, entt::registry& registry
                         lightMask[curVox[u] + curVox[v] * chunkDimSize[u]]
                                 = getLightLevelAt(registry, chunk, blocks, curVox[0] + dVec[0],
                                                   curVox[1] + dVec[1], curVox[2] + dVec[2]);
-
-//                    if (bFace == AIR) // non-AIR block is dVec forward at fFace position
-//                        x = curVox[0] + dVec[0], y = curVox[1] + dVec[1], z = curVox[2] + dVec[2];
-//                    else // non-AIR block is at curVox, no need to step in dVec direction
-//                        x = curVox[0], y = curVox[1], z = curVox[2];
-//                    lightMask[curVox[u] + curVox[v] * chunkDimSize[u]]
-//                        = getLightLevel(m_Registry, chunk, blocks, x, y, z, dirs[dim][(bFace == AIR)]);
                 }
 
             // starts at -1 for first face, which is truly blockAt 0 relative to chunk --> inc reflects face position

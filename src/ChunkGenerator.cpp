@@ -1,6 +1,7 @@
 
 #include "ChunkGenerator.h"
 #include "Components.h"
+#include "Debug.h"
 //#include <glad.h>
 #include <iostream>
 #include <queue>
@@ -54,6 +55,7 @@ const entt::entity ChunkGenerator::generateChunkEntity(const glm::vec3& chunkPos
     std::vector<texArrayVertex> chunkVertices; // uninitialized, marked for update
     // std::move required for OpenGL ownership
     m_Registry.emplace<MeshComponent>(e_Chunk, true, std::move(chunkVBO), chunkVertices);
+
     ChunkComponent chunkComp;
     m_Registry.emplace<ChunkComponent>(e_Chunk, chunkComp);
     m_ChunkMap.insertChunk(e_Chunk, std::make_pair(chunkPos.x, chunkPos.z));

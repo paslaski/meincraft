@@ -63,6 +63,13 @@ void RenderSystem::renderChunks(entt::registry& registry)
     for (const entt::entity& meshEntity : meshView)
     {
         MeshComponent& meshComp = meshView.get<MeshComponent>(meshEntity);
+
+//        if (not meshComp.initialized) {
+//            continue;
+//            GLCall(glBufferData(GL_ARRAY_BUFFER, meshComp.chunkVertices.size() * sizeof(texArrayVertex),
+//                                &meshComp.chunkVertices[0], GL_STATIC_DRAW));
+//        }
+
         bindBuffer(meshComp); // bind VBO, send updated data to GPU if necessary
         GLCall(glDrawArrays(GL_TRIANGLES, 0, meshComp.chunkVertices.size())); // draw call
     }
